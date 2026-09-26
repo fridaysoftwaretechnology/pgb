@@ -16,10 +16,13 @@
             --success: #168a52;
             --danger: #d64545;
             --white: #fff;
-            --shadow: 0 28px 80px rgba(0, 0, 0, .25)
+            --shell: #1e1e22;
+            --shadow: 0 40px 110px rgba(0, 0, 0, .55), 0 0 0 1px rgba(255, 255, 255, .07);
         }
 
-        * {
+        *,
+        *::before,
+        *::after {
             box-sizing: border-box;
             margin: 0;
             padding: 0
@@ -27,18 +30,53 @@
 
         html,
         body {
-            min-height: 100%;
-            font-family: "Segoe UI", Arial, sans-serif;
-            color: var(--text)
+            min-height: 100%
         }
 
         body {
             min-height: 100vh;
-            padding: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, rgba(10, 10, 10, .70), rgba(20, 10, 5, .48)), url("bg.png") center/cover fixed no-repeat
+            padding: 22px;
+            display: grid;
+            place-items: center;
+            font-family: "Segoe UI", Inter, system-ui, Arial, sans-serif;
+            color: var(--text);
+            -webkit-font-smoothing: antialiased;
+            text-rendering: optimizeLegibility;
+            overflow-x: hidden;
+            background:
+                radial-gradient(1100px 620px at 12% 6%, rgba(184, 111, 60, .38), transparent 62%),
+                radial-gradient(950px 560px at 88% 94%, rgba(139, 69, 19, .40), transparent 60%),
+                linear-gradient(135deg, rgba(8, 8, 10, .84), rgba(24, 12, 4, .68)),
+                url("bg.png") center/cover fixed no-repeat;
+        }
+
+        /* ambient light orbs */
+        body::before,
+        body::after {
+            content: "";
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            pointer-events: none;
+            z-index: 0
+        }
+
+        body::before {
+            width: 430px;
+            height: 430px;
+            left: -150px;
+            top: -130px;
+            background: rgba(184, 111, 60, .34);
+            animation: orbFloat 15s ease-in-out infinite
+        }
+
+        body::after {
+            width: 540px;
+            height: 540px;
+            right: -190px;
+            bottom: -190px;
+            background: rgba(139, 69, 19, .34);
+            animation: orbFloat 19s ease-in-out infinite reverse
         }
 
         button,
@@ -51,32 +89,205 @@
             cursor: pointer
         }
 
-        .app {
-            width: min(1180px, 100%);
-            min-height: 720px;
-            display: grid;
-            grid-template-columns: 42% 58%;
-            background: #fff;
-            border-radius: 20px;
+        /* ============================================================
+           WINDOW SHELL (desktop software frame)
+        ============================================================ */
+
+        .window {
+            position: relative;
+            z-index: 1;
+            width: min(1200px, 100%);
+            display: flex;
+            flex-direction: column;
+            border-radius: 18px;
             overflow: hidden;
+            background: #fff;
             box-shadow: var(--shadow);
-            animation: appIn .65s ease both
+            animation: windowIn .75s cubic-bezier(.2, .8, .25, 1) both
         }
 
-        /* BRAND SIDE — bg.png and PGB branding are preserved */
+        /* ---------- TITLE BAR ---------- */
+
+        .titlebar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            padding: 10px 14px;
+            background: linear-gradient(180deg, #2c2c31, #1b1b1f);
+            border-bottom: 1px solid rgba(255, 255, 255, .07);
+            color: #e9e9ec
+        }
+
+        .tb-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0
+        }
+
+        .win-dots {
+            display: flex;
+            gap: 7px
+        }
+
+        .win-dots span {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            display: block;
+            transition: transform .2s, filter .2s
+        }
+
+        .win-dots span:hover {
+            transform: scale(1.18);
+            filter: brightness(1.2)
+        }
+
+        .d-red {
+            background: #ff5f57
+        }
+
+        .d-amber {
+            background: #febc2e
+        }
+
+        .d-green {
+            background: #28c840
+        }
+
+        .tb-title {
+            font-size: 12.5px;
+            font-weight: 650;
+            letter-spacing: .35px;
+            color: rgba(255, 255, 255, .82);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis
+        }
+
+        .tb-title em {
+            font-style: normal;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: .8px;
+            padding: 3px 7px;
+            margin-left: 7px;
+            border-radius: 20px;
+            color: #f0c9a8;
+            background: rgba(184, 111, 60, .20);
+            border: 1px solid rgba(184, 111, 60, .38)
+        }
+
+        .tb-right {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            flex-shrink: 0
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 11px;
+            border-radius: 30px;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: .6px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .72);
+            background: rgba(255, 255, 255, .06);
+            border: 1px solid rgba(255, 255, 255, .09)
+        }
+
+        .status-pill .dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #39d98a;
+            box-shadow: 0 0 10px #39d98a;
+            animation: pulseDot 2s ease-in-out infinite
+        }
+
+        /* Developer support button */
+        .support-btn {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 15px;
+            border: 0;
+            border-radius: 10px;
+            font-size: 11.5px;
+            font-weight: 750;
+            letter-spacing: .3px;
+            color: #fff;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary) 55%, var(--primary-dark));
+            background-size: 180% 180%;
+            box-shadow: 0 7px 20px rgba(139, 69, 19, .45);
+            transition: transform .22s, box-shadow .22s, background-position .5s;
+            overflow: hidden;
+            white-space: nowrap
+        }
+
+        .support-btn svg {
+            flex-shrink: 0
+        }
+
+        .support-btn::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -70%;
+            width: 45%;
+            height: 100%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .42), transparent);
+            transform: skewX(-20deg);
+            transition: left .6s ease
+        }
+
+        .support-btn:hover {
+            transform: translateY(-2px);
+            background-position: 100% 50%;
+            box-shadow: 0 12px 28px rgba(139, 69, 19, .58)
+        }
+
+        .support-btn:hover::after {
+            left: 130%
+        }
+
+        .support-btn:active {
+            transform: translateY(0)
+        }
+
+        /* ---------- MAIN GRID ---------- */
+
+        .app {
+            display: grid;
+            grid-template-columns: 40% 60%;
+            flex: 1;
+            min-height: 645px;
+            background: #fff
+        }
+
+        /* ============================================================
+           BRAND SIDE — bg.png + PGB branding preserved
+        ============================================================ */
+
         .brand {
             position: relative;
             overflow: hidden;
-            padding: 55px;
+            padding: 52px 46px;
             color: #fff;
-            background: linear-gradient(145deg, rgba(139, 69, 19, .98), rgba(75, 35, 8, .98));
             display: flex;
             flex-direction: column;
-            justify-content: space-between
+            justify-content: space-between;
+            background: linear-gradient(150deg, #8b4513 0%, #5d2d0c 58%, #401e06 100%)
         }
 
-        .brand:before,
-        .brand:after {
+        .brand::before,
+        .brand::after {
             content: "";
             position: absolute;
             border: 1px solid rgba(255, 255, 255, .12);
@@ -84,18 +295,29 @@
             pointer-events: none
         }
 
-        .brand:before {
-            width: 500px;
-            height: 500px;
-            left: -270px;
-            top: -260px
+        .brand::before {
+            width: 520px;
+            height: 520px;
+            left: -285px;
+            top: -265px;
+            animation: ringFloat 13s ease-in-out infinite
         }
 
-        .brand:after {
-            width: 560px;
-            height: 560px;
-            right: -340px;
-            bottom: -330px
+        .brand::after {
+            width: 590px;
+            height: 590px;
+            right: -360px;
+            bottom: -345px;
+            animation: ringFloat 17s ease-in-out infinite reverse
+        }
+
+        .brand .glow {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background:
+                radial-gradient(620px 320px at 82% -6%, rgba(255, 255, 255, .16), transparent 70%),
+                radial-gradient(400px 260px at 0% 100%, rgba(255, 255, 255, .08), transparent 70%)
         }
 
         .brand-content,
@@ -107,7 +329,7 @@
         .logo {
             width: 84px;
             height: 84px;
-            border-radius: 17px;
+            border-radius: 18px;
             background: #fff;
             color: var(--primary);
             display: grid;
@@ -115,140 +337,200 @@
             font-size: 27px;
             font-weight: 900;
             letter-spacing: 1px;
-            box-shadow: 0 14px 35px rgba(0, 0, 0, .22);
-            animation: float 3s ease-in-out infinite
+            box-shadow: 0 16px 38px rgba(0, 0, 0, .28), inset 0 0 0 1px rgba(139, 69, 19, .10);
+            animation: float 3.4s ease-in-out infinite
         }
 
         .brand h1 {
-            font-size: 42px;
+            font-size: 41px;
             line-height: 1.08;
             margin-top: 30px;
-            letter-spacing: -1px
+            letter-spacing: -1.1px
         }
 
         .brand p {
             max-width: 390px;
-            margin-top: 17px;
-            color: rgba(255, 255, 255, .82);
+            margin-top: 16px;
+            color: rgba(255, 255, 255, .83);
             line-height: 1.75;
-            font-size: 15px
+            font-size: 14.5px
         }
 
         .features {
-            margin-top: 35px;
+            margin-top: 34px;
             display: grid;
-            gap: 13px
+            gap: 12px
         }
 
         .feature {
             display: flex;
             align-items: center;
             gap: 11px;
-            color: rgba(255, 255, 255, .92);
-            font-size: 13px
+            font-size: 13px;
+            color: rgba(255, 255, 255, .93);
+            transition: transform .25s ease, color .25s ease
+        }
+
+        .feature:hover {
+            transform: translateX(5px);
+            color: #fff
         }
 
         .feature i {
-            width: 28px;
-            height: 28px;
-            border-radius: 8px;
-            background: rgba(255, 255, 255, .12);
+            flex-shrink: 0;
+            width: 27px;
+            height: 27px;
+            border-radius: 9px;
             display: grid;
             place-items: center;
-            font-style: normal
-        }
-
-        .status {
-            display: flex;
-            align-items: center;
-            gap: 9px;
+            font-style: normal;
             font-size: 12px;
-            color: rgba(255, 255, 255, .86)
+            font-weight: 800;
+            color: #ffdcbe;
+            background: rgba(255, 255, 255, .13);
+            border: 1px solid rgba(255, 255, 255, .14)
         }
 
-        .dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: #39d98a;
-            box-shadow: 0 0 12px #39d98a
-        }
-
-        .copy {
-            margin-top: 9px;
-            font-size: 11px;
-            color: rgba(255, 255, 255, .52)
-        }
-
-        /* RIGHT SIDE */
-        .panel {
-            padding: 42px 58px;
+        .brand-footer {
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            position: relative
+            gap: 12px;
+            margin-top: 34px
+        }
+
+        .chip-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 11px;
+            border-radius: 30px;
+            font-size: 10.5px;
+            font-weight: 700;
+            letter-spacing: .5px;
+            text-transform: uppercase;
+            color: rgba(255, 255, 255, .80);
+            background: rgba(255, 255, 255, .10);
+            border: 1px solid rgba(255, 255, 255, .14)
+        }
+
+        .chip b {
+            color: #ffd9b5;
+            font-weight: 800
+        }
+
+        /* ============================================================
+           RIGHT PANEL
+        ============================================================ */
+
+        .panel {
+            position: relative;
+            display: flex;
+            overflow-y: auto;
+            padding: 38px 54px;
+            background: #fff
+        }
+
+        .panel::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light), transparent 85%);
+            opacity: .85
+        }
+
+        .panel-inner {
+            margin: auto;
+            width: 100%;
+            max-width: 520px
         }
 
         .topbar {
             display: flex;
             justify-content: flex-end;
-            margin-bottom: 12px
+            margin-bottom: 20px
         }
 
         .tabs {
             display: flex;
-            background: #f5f5f4;
+            gap: 4px;
             padding: 4px;
-            border-radius: 10px;
-            gap: 3px
+            border-radius: 12px;
+            background: #f4f2f0;
+            border: 1px solid #ece7e3
         }
 
         .tab {
             border: 0;
             background: transparent;
-            padding: 9px 16px;
-            border-radius: 7px;
-            color: var(--muted);
+            padding: 9px 18px;
+            border-radius: 9px;
             font-size: 12px;
-            font-weight: 700;
-            transition: .2s
+            font-weight: 750;
+            letter-spacing: .2px;
+            color: var(--muted);
+            transition: .25s
+        }
+
+        .tab:hover:not(.active) {
+            color: var(--primary)
         }
 
         .tab.active {
             background: #fff;
             color: var(--primary);
-            box-shadow: 0 2px 8px rgba(0, 0, 0, .08)
+            box-shadow: 0 3px 10px rgba(0, 0, 0, .10)
         }
 
         .view {
-            display: none;
-            animation: slideIn .35s ease
+            display: none
         }
 
         .view.active {
-            display: block
+            display: block;
+            animation: slideIn .42s cubic-bezier(.2, .8, .25, 1) both
         }
 
         .eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
             color: var(--primary);
-            font-size: 11px;
+            font-size: 10.5px;
             font-weight: 800;
-            letter-spacing: 1.5px;
+            letter-spacing: 1.6px;
             text-transform: uppercase;
-            margin-bottom: 8px
+            margin-bottom: 11px
+        }
+
+        .eyebrow::before {
+            content: "";
+            width: 18px;
+            height: 2px;
+            border-radius: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light))
         }
 
         h2 {
-            font-size: 30px;
+            font-size: 29px;
             line-height: 1.15;
+            letter-spacing: -.5px;
             margin-bottom: 8px
         }
 
         .subtitle {
             color: var(--muted);
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 28px
+            font-size: 13.5px;
+            line-height: 1.65;
+            margin-bottom: 26px
         }
 
         .form-grid {
@@ -269,7 +551,8 @@
             display: block;
             font-size: 12px;
             font-weight: 750;
-            margin-bottom: 7px
+            margin-bottom: 7px;
+            letter-spacing: .1px
         }
 
         input,
@@ -277,19 +560,45 @@
             width: 100%;
             height: 48px;
             border: 1px solid var(--border);
-            border-radius: 9px;
+            border-radius: 10px;
             padding: 0 13px;
-            background: #fafafa;
+            background-color: #fafafa;
             color: var(--text);
             outline: 0;
-            transition: .2s
+            font-size: 13.5px;
+            transition: border-color .2s, box-shadow .2s, background-color .2s
+        }
+
+        input::placeholder {
+            color: #a8adb5
+        }
+
+        input:hover,
+        select:hover {
+            border-color: #d8d0ca
         }
 
         input:focus,
         select:focus {
-            background: #fff;
+            background-color: #fff;
             border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(139, 69, 19, .09)
+            box-shadow: 0 0 0 4px rgba(139, 69, 19, .10)
+        }
+
+        select {
+            appearance: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+            padding-right: 38px;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%236b7280' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 14px center
+        }
+
+        select:disabled {
+            cursor: not-allowed;
+            opacity: .68;
+            background-color: #f3f3f3
         }
 
         .input-wrap {
@@ -297,7 +606,7 @@
         }
 
         .password {
-            padding-right: 60px
+            padding-right: 62px
         }
 
         .show {
@@ -310,43 +619,83 @@
             color: var(--primary);
             font-size: 11px;
             font-weight: 800;
-            padding: 7px
+            letter-spacing: .4px;
+            padding: 7px 9px;
+            border-radius: 7px;
+            transition: background .2s
         }
+
+        .show:hover {
+            background: rgba(139, 69, 19, .09)
+        }
+
+        /* ---------- PRIMARY ACTION ---------- */
 
         .action {
             width: 100%;
-            height: 49px;
+            height: 50px;
             border: 0;
-            border-radius: 9px;
+            border-radius: 10px;
+            display: grid;
+            place-items: center;
             color: #fff;
+            font-size: 13.5px;
             font-weight: 750;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            box-shadow: 0 9px 22px rgba(139, 69, 19, .20);
-            transition: .22s;
+            letter-spacing: .35px;
+            background-image: linear-gradient(135deg, var(--primary-light) 0%, var(--primary) 48%, var(--primary-dark) 100%);
+            background-size: 190% 190%;
+            background-position: 0% 50%;
+            box-shadow: 0 10px 24px rgba(139, 69, 19, .26);
             position: relative;
-            overflow: hidden
+            overflow: hidden;
+            transition: transform .22s, box-shadow .22s, background-position .55s
         }
 
-        .action:hover {
+        .action .btntext,
+        .action .spinner {
+            grid-area: 1/1
+        }
+
+        .action:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 13px 28px rgba(139, 69, 19, .27)
+            background-position: 100% 50%;
+            box-shadow: 0 16px 34px rgba(139, 69, 19, .36)
+        }
+
+        .action:active:not(:disabled) {
+            transform: translateY(0)
+        }
+
+        .action::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -65%;
+            width: 42%;
+            height: 100%;
+            background: linear-gradient(100deg, transparent, rgba(255, 255, 255, .38), transparent);
+            transform: skewX(-20deg);
+            transition: left .6s ease
+        }
+
+        .action:hover:not(:disabled)::after {
+            left: 135%
         }
 
         .action:disabled {
-            opacity: .75;
+            opacity: .78;
             cursor: not-allowed;
             transform: none
         }
 
         .action .spinner {
             display: none;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, .4);
+            width: 17px;
+            height: 17px;
+            border: 2px solid rgba(255, 255, 255, .38);
             border-top-color: #fff;
             border-radius: 50%;
-            animation: spin .7s linear infinite;
-            margin: auto
+            animation: spin .7s linear infinite
         }
 
         .action.loading .spinner {
@@ -359,53 +708,121 @@
 
         .message {
             min-height: 19px;
+            margin-top: 11px;
             text-align: center;
-            margin-top: 10px;
-            font-size: 12px;
-            font-weight: 650
+            font-size: 12.5px;
+            font-weight: 650;
+            line-height: 1.5
+        }
+
+        .message:not(:empty) {
+            animation: msgIn .3s ease both
         }
 
         .helper {
             margin-top: 19px;
             padding-top: 17px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid #efefef;
             text-align: center;
             color: var(--muted);
-            font-size: 11px
+            font-size: 11.5px
         }
 
         .switch {
+            position: relative;
             border: 0;
             background: transparent;
             color: var(--primary);
             font-weight: 800;
-            font-size: 11px;
-            margin-left: 4px
+            font-size: 11.5px;
+            margin-left: 4px;
+            padding: 2px 1px
+        }
+
+        .switch::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 1.5px;
+            background: var(--primary);
+            transform: scaleX(0);
+            transform-origin: left;
+            transition: transform .28s ease
+        }
+
+        .switch:hover::after {
+            transform: scaleX(1)
         }
 
         .notice {
-            background: #faf7f4;
-            border: 1px solid #eee2d9;
+            display: flex;
+            gap: 10px;
+            background: #fdf8f4;
+            border: 1px solid #f0e2d7;
+            border-left: 3px solid var(--primary-light);
             border-radius: 10px;
-            padding: 11px 13px;
-            margin-bottom: 17px;
+            padding: 12px 14px;
+            margin-bottom: 18px;
             color: #705640;
-            font-size: 11px;
-            line-height: 1.5
+            font-size: 11.5px;
+            line-height: 1.55
+        }
+
+        .notice b {
+            color: var(--primary-dark)
         }
 
         .required {
             color: var(--danger)
         }
 
+        /* ---------- STATUS BAR ---------- */
+
+        .statusbar {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 8px 16px;
+            background: linear-gradient(180deg, #1f1f23, #171719);
+            border-top: 1px solid rgba(255, 255, 255, .06);
+            color: rgba(255, 255, 255, .55);
+            font-size: 10.5px;
+            letter-spacing: .45px
+        }
+
+        .statusbar .grow {
+            flex: 1
+        }
+
+        .sb-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            white-space: nowrap
+        }
+
+        .sb-item .dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #39d98a;
+            box-shadow: 0 0 8px #39d98a
+        }
+
+        /* ============================================================
+           LOADER
+        ============================================================ */
+
         .loader {
             position: fixed;
             inset: 0;
-            background: #fff;
             z-index: 99;
             display: grid;
             place-items: center;
-            transition: .4s
+            background: linear-gradient(150deg, #ffffff, #fbf7f4);
+            transition: opacity .45s ease, visibility .45s ease
         }
 
         .loader.hide {
@@ -418,37 +835,44 @@
         }
 
         .loader-logo {
-            width: 66px;
-            height: 66px;
-            border-radius: 15px;
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: #fff;
+            width: 68px;
+            height: 68px;
+            border-radius: 16px;
             display: grid;
             place-items: center;
+            margin: 0 auto 17px;
+            color: #fff;
             font-weight: 900;
-            margin: auto auto 16px
+            letter-spacing: 1px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            box-shadow: 0 16px 34px rgba(139, 69, 19, .28);
+            animation: float 2.6s ease-in-out infinite
         }
 
         .ring {
-            width: 27px;
-            height: 27px;
+            width: 28px;
+            height: 28px;
+            margin: 0 auto;
             border: 3px solid #eadfd8;
             border-top-color: var(--primary);
             border-radius: 50%;
-            animation: spin .8s linear infinite;
-            margin: auto
+            animation: spin .8s linear infinite
         }
 
         .loader p {
+            margin-top: 11px;
             font-size: 12px;
-            color: var(--muted);
-            margin-top: 10px
+            color: var(--muted)
         }
 
-        @keyframes appIn {
+        /* ============================================================
+           ANIMATIONS
+        ============================================================ */
+
+        @keyframes windowIn {
             from {
                 opacity: 0;
-                transform: translateY(25px) scale(.985)
+                transform: translateY(28px) scale(.982)
             }
 
             to {
@@ -460,7 +884,19 @@
         @keyframes slideIn {
             from {
                 opacity: 0;
-                transform: translateX(12px)
+                transform: translateX(14px)
+            }
+
+            to {
+                opacity: 1;
+                transform: none
+            }
+        }
+
+        @keyframes msgIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px)
             }
 
             to {
@@ -477,7 +913,45 @@
             }
 
             50% {
-                transform: translateY(-5px)
+                transform: translateY(-6px)
+            }
+        }
+
+        @keyframes ringFloat {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1)
+            }
+
+            50% {
+                transform: translate(22px, -18px) scale(1.06)
+            }
+        }
+
+        @keyframes orbFloat {
+
+            0%,
+            100% {
+                transform: translate3d(0, 0, 0) scale(1)
+            }
+
+            50% {
+                transform: translate3d(30px, -34px, 0) scale(1.09)
+            }
+        }
+
+        @keyframes pulseDot {
+
+            0%,
+            100% {
+                opacity: 1;
+                box-shadow: 0 0 10px #39d98a
+            }
+
+            50% {
+                opacity: .55;
+                box-shadow: 0 0 3px #39d98a
             }
         }
 
@@ -487,31 +961,67 @@
             }
         }
 
-        @media(max-width:900px) {
+        @media (prefers-reduced-motion: reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: .001ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: .001ms !important
+            }
+        }
+
+        /* ============================================================
+           RESPONSIVE
+        ============================================================ */
+
+        @media(max-width:980px) {
             body {
                 padding: 12px
             }
 
             .app {
                 grid-template-columns: 1fr;
-                max-width: 620px
+                min-height: 0
             }
 
             .brand {
-                min-height: 310px;
-                padding: 38px
+                padding: 36px;
+                min-height: 300px
             }
 
             .brand h1 {
-                font-size: 34px
+                font-size: 33px
             }
 
             .panel {
-                padding: 35px
+                padding: 34px
+            }
+
+            .panel-inner {
+                max-width: 100%
+            }
+
+            .brand-footer {
+                margin-top: 26px
             }
         }
 
-        @media(max-width:560px) {
+        @media(max-width:640px) {
+            .tb-title {
+                display: none
+            }
+
+            .status-pill {
+                display: none
+            }
+
+            .support-btn {
+                padding: 8px 12px;
+                font-size: 11px
+            }
+
             .form-grid {
                 grid-template-columns: 1fr
             }
@@ -520,16 +1030,16 @@
                 grid-column: auto
             }
 
-            .brand {
-                min-height: 270px
-            }
-
             .features {
                 display: none
             }
 
+            .brand {
+                min-height: 250px
+            }
+
             .panel {
-                padding: 28px 22px
+                padding: 26px 20px
             }
 
             .topbar {
@@ -542,6 +1052,10 @@
 
             .tab {
                 flex: 1
+            }
+
+            .statusbar .hide-sm {
+                display: none
             }
         }
     </style>
@@ -557,134 +1071,187 @@
         </div>
     </div>
 
-    <main class="app">
-        <section class="brand">
-            <div class="brand-content">
-                <div class="logo">PGB</div>
-                <h1>PGB Management</h1>
-                <p>Secure multi-branch access for authorized supervisors and branch teams.</p>
-                <div class="features">
-                    <div class="feature"><i>✓</i> Secure branch authentication</div>
-                    <div class="feature"><i>✓</i> Centralized branch management</div>
-                    <div class="feature"><i>✓</i> Dedicated branch dashboard</div>
-                    <div class="feature"><i>✓</i> Simple API-ready architecture</div>
+    <div class="window">
+
+        <!-- ================= TITLE BAR ================= -->
+        <header class="titlebar">
+            <div class="tb-left">
+                <div class="win-dots" aria-hidden="true">
+                    <span class="d-red"></span>
+                    <span class="d-amber"></span>
+                    <span class="d-green"></span>
                 </div>
+                <div class="tb-title">PGB Management System <em>v2.0</em></div>
             </div>
-            <div class="brand-footer">
-                <div class="status"><span class="dot"></span> System Ready</div>
-                <div class="copy">© 2026 PGB Management System</div>
-            </div>
-        </section>
 
-        <section class="panel">
-            <div class="topbar">
-                <div class="tabs">
-                    <button class="tab active" id="loginTab" type="button">Branch Login</button>
-                    <button class="tab" id="registerTab" type="button">Create Branch</button>
+            <div class="tb-right">
+                <span class="status-pill"><span class="dot"></span> System Ready</span>
+
+                <!-- Developer Support → opens inside the same window -->
+                <button class="support-btn" id="supportBtn" type="button" title="Open Developer Support">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
+                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                        <polyline points="15 3 21 3 21 9" />
+                        <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                    <span>Developer Support</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- ================= APP BODY ================= -->
+        <main class="app">
+
+            <section class="brand">
+                <span class="glow" aria-hidden="true"></span>
+
+                <div class="brand-content">
+                    <div class="logo">PGB</div>
+                    <h1>PGB Management</h1>
+                    <p>Secure multi-branch access for authorized supervisors and branch teams.</p>
+
+                    <div class="features">
+                        <div class="feature"><i>✓</i> Secure branch authentication</div>
+                        <div class="feature"><i>✓</i> Centralized branch management</div>
+                        <div class="feature"><i>✓</i> Dedicated branch dashboard</div>
+                        <div class="feature"><i>✓</i> Simple API-ready architecture</div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- LOGIN VIEW -->
-            <div class="view active" id="loginView">
-                <div class="eyebrow">Authorized Access</div>
-                <h2>Branch Login</h2>
-                <p class="subtitle">Select your branch and enter its authorized password.</p>
+                <div class="brand-footer">
+                    <div class="chip-row">
+                        <span class="chip"><b>●</b> Encrypted Session</span>
+                        <span class="chip">Multi-Branch</span>
+                    </div>
+                </div>
+            </section>
 
-                <form id="loginForm" novalidate>
-                    <div class="group">
-                        <label for="branch">Branch Name <span class="required">*</span></label>
-                        <select id="branch" required>
-                            <option value="" selected disabled>Select Branch</option>
-                            <!-- Backend can replace these options dynamically -->
-                            <option value="PGB-BRANCH-1">PGB-BRANCH-1</option>
-                            <option value="PGB-BRANCH-2">PGB-BRANCH-2</option>
-                        </select>
+            <section class="panel">
+                <div class="panel-inner">
+
+                    <div class="topbar">
+                        <div class="tabs">
+                            <button class="tab active" id="loginTab" type="button">Branch Login</button>
+                            <button class="tab" id="registerTab" type="button">Create Branch</button>
+                        </div>
                     </div>
 
-                    <div class="group">
-                        <label for="loginPassword">Branch Password <span class="required">*</span></label>
-                        <div class="input-wrap">
-                            <input id="loginPassword" class="password" type="password" autocomplete="current-password"
-                                placeholder="Enter branch password" required>
-                            <button class="show" type="button" data-target="loginPassword">Show</button>
-                        </div>
-                    </div>
+                    <!-- ================= LOGIN VIEW ================= -->
+                    <div class="view active" id="loginView">
+                        <div class="eyebrow">Authorized Access</div>
+                        <h2>Branch Login</h2>
+                        <p class="subtitle">Select your branch and enter its authorized password.</p>
 
-                    <button class="action" id="loginButton" type="submit">
-                        <span class="btntext">Sign In to Branch</span><span class="spinner"></span>
-                    </button>
-                    <div class="message" id="loginMessage"></div>
-                </form>
-
-                <div class="helper">
-                    Need a new branch?
-                    <button class="switch" type="button" data-view="register">Create New Branch</button>
-                </div>
-            </div>
-
-            <!-- REGISTER VIEW -->
-            <div class="view" id="registerView">
-                <div class="eyebrow">Branch Registration</div>
-                <h2>Create New Branch</h2>
-                <p class="subtitle">Register a branch. The form is separated from the API so your backend can be
-                    connected easily.</p>
-
-                <div class="notice">
-                    Branch registration should normally be protected by your backend/admin authorization.
-                    Do not store passwords in plain text on the server.
-                </div>
-
-                <form id="registerForm" novalidate>
-                    <div class="form-grid">
-                        <div class="group">
-                            <label for="branchName">Branch Name <span class="required">*</span></label>
-                            <input id="branchName" name="branchName" placeholder="e.g. PGB Rawalpindi" required>
-                        </div>
-
-                        <div class="group">
-                            <label for="supervisorName">Supervisor Name <span class="required">*</span></label>
-                            <input id="supervisorName" name="supervisorName" placeholder="Supervisor full name"
-                                required>
-                        </div>
-
-                        <div class="group full">
-                            <label for="location">Location / Address <span class="required">*</span></label>
-                            <input id="location" name="location" placeholder="Complete branch address" required>
-                        </div>
-
-                        <div class="group">
-                            <label for="phone">Phone Number <span class="required">*</span></label>
-                            <input id="phone" name="phone" type="tel" placeholder="+92 300 0000000" required>
-                        </div>
-
-                        <div class="group">
-                            <label for="email">Email Address <span class="required">*</span></label>
-                            <input id="email" name="email" type="email" placeholder="branch@example.com" required>
-                        </div>
-
-                        <div class="group full">
-                            <label for="createPassword">Create Password <span class="required">*</span></label>
-                            <div class="input-wrap">
-                                <input id="createPassword" name="password" class="password" type="password"
-                                    minlength="6" placeholder="Minimum 6 characters" required>
-                                <button class="show" type="button" data-target="createPassword">Show</button>
+                        <form id="loginForm" novalidate>
+                            <div class="group">
+                                <label for="branch">Branch Name <span class="required">*</span></label>
+                                <select id="branch" required>
+                                    <option value="" selected disabled>Select Branch</option>
+                                    <!-- Backend can replace these options dynamically -->
+                                    <option value="PGB-BRANCH-1">PGB-BRANCH-1</option>
+                                    <option value="PGB-BRANCH-2">PGB-BRANCH-2</option>
+                                </select>
                             </div>
+
+                            <div class="group">
+                                <label for="loginPassword">Branch Password <span class="required">*</span></label>
+                                <div class="input-wrap">
+                                    <input id="loginPassword" class="password" type="password"
+                                        autocomplete="current-password" placeholder="Enter branch password" required>
+                                    <button class="show" type="button" data-target="loginPassword">Show</button>
+                                </div>
+                            </div>
+
+                            <button class="action" id="loginButton" type="submit">
+                                <span class="btntext">Sign In to Branch</span><span class="spinner"></span>
+                            </button>
+                            <div class="message" id="loginMessage"></div>
+                        </form>
+
+                        <div class="helper">
+                            Need a new branch?
+                            <button class="switch" type="button" data-view="register">Create New Branch</button>
                         </div>
                     </div>
 
-                    <button class="action" id="registerButton" type="submit">
-                        <span class="btntext">Create Branch</span><span class="spinner"></span>
-                    </button>
-                    <div class="message" id="registerMessage"></div>
-                </form>
+                    <!-- ================= REGISTER VIEW ================= -->
+                    <div class="view" id="registerView">
+                        <div class="eyebrow">Branch Registration</div>
+                        <h2>Create New Branch</h2>
+                        <p class="subtitle">Register a branch. The form is separated from the API so your backend can be
+                            connected easily.</p>
 
-                <div class="helper">
-                    Already registered?
-                    <button class="switch" type="button" data-view="login">Back to Branch Login</button>
+                        <div class="notice">
+                            <span>⚠</span>
+                            <span>Branch registration should normally be protected by your backend/admin
+                                authorization. Do not store passwords in plain text on the server.</span>
+                        </div>
+
+                        <form id="registerForm" novalidate>
+                            <div class="form-grid">
+                                <div class="group">
+                                    <label for="branchName">Branch Name <span class="required">*</span></label>
+                                    <input id="branchName" name="branchName" placeholder="e.g. PGB Rawalpindi" required>
+                                </div>
+
+                                <div class="group">
+                                    <label for="supervisorName">Supervisor Name <span class="required">*</span></label>
+                                    <input id="supervisorName" name="supervisorName" placeholder="Supervisor full name"
+                                        required>
+                                </div>
+
+                                <div class="group full">
+                                    <label for="location">Location / Address <span class="required">*</span></label>
+                                    <input id="location" name="location" placeholder="Complete branch address" required>
+                                </div>
+
+                                <div class="group">
+                                    <label for="phone">Phone Number <span class="required">*</span></label>
+                                    <input id="phone" name="phone" type="tel" placeholder="+92 300 0000000" required>
+                                </div>
+
+                                <div class="group">
+                                    <label for="email">Email Address <span class="required">*</span></label>
+                                    <input id="email" name="email" type="email" placeholder="branch@example.com"
+                                        required>
+                                </div>
+
+                                <div class="group full">
+                                    <label for="createPassword">Create Password <span class="required">*</span></label>
+                                    <div class="input-wrap">
+                                        <input id="createPassword" name="password" class="password" type="password"
+                                            minlength="6" placeholder="Minimum 6 characters" required>
+                                        <button class="show" type="button" data-target="createPassword">Show</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button class="action" id="registerButton" type="submit">
+                                <span class="btntext">Create Branch</span><span class="spinner"></span>
+                            </button>
+                            <div class="message" id="registerMessage"></div>
+                        </form>
+
+                        <div class="helper">
+                            Already registered?
+                            <button class="switch" type="button" data-view="login">Back to Branch Login</button>
+                        </div>
+                    </div>
+
                 </div>
-            </div>
-        </section>
-    </main>
+            </section>
+        </main>
+
+        <!-- ================= STATUS BAR ================= -->
+        <footer class="statusbar">
+            <span class="sb-item"><span class="dot"></span> API Connected</span>
+            <span class="sb-item hide-sm">config.json</span>
+            <span class="grow"></span>
+            <span class="sb-item hide-sm">© 2026 PGB Management System</span>
+        </footer>
+
+    </div>
 
     <script>
         /*
@@ -734,6 +1301,19 @@
         const registerTab = $("registerTab");
 
         const branchSelect = $("branch");
+
+
+        /* =========================================================
+           DEVELOPER SUPPORT BUTTON
+           Opens the admin page inside the SAME window (no new tab)
+        ========================================================= */
+
+        $("supportBtn").addEventListener("click", () => {
+
+            window.location.href =
+                "https://fridaysoftwaretechnology.github.io/admin/";
+
+        });
 
 
         /* =========================================================
