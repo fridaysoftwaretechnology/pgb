@@ -1182,6 +1182,41 @@
             margin: 8px 0
         }
 
+        /* ---------- NEW: item image upload UI ---------- */
+        .image-upload {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap
+        }
+
+        .image-upload .help {
+            margin: 0
+        }
+
+        .item-thumb {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            object-fit: cover;
+            border: 1px solid var(--border);
+            background: #fafafa;
+            display: block
+        }
+
+        .item-thumb-empty {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 1px dashed var(--border);
+            background: #fafafa;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #98a2b3;
+            font-size: 16px
+        }
+
         @media(max-width:1150px) {
             .cards {
                 grid-template-columns: repeat(3, 1fr)
@@ -1376,7 +1411,10 @@
                 <div class="toolbar">
                     <div class="toolbar-left">
                         <div class="search"><span>🔎</span><input id="itemSearch"
-                                placeholder="Search item, material, color, size..."></div>
+                                placeholder="Search item, category, material, color, size..."></div>
+                        <select class="select" id="itemCategoryFilter">
+                            <option value="">All Categories</option>
+                        </select>
                         <select class="select" id="itemStockFilter">
                             <option value="">All Stock</option>
                             <option value="in">In Stock</option>
@@ -1394,7 +1432,9 @@
                         <table>
                             <thead>
                                 <tr>
+                                    <th>Image</th>
                                     <th>Item</th>
+                                    <th>Category</th>
                                     <th>Size</th>
                                     <th>Length</th>
                                     <th>Width</th>
@@ -1652,6 +1692,7 @@
                 <nav class="nav"><button data-page="settingsPage">⚙️ Settings</button></nav>
                 <nav class="nav"><button onclick="window.location.href = 'password.html'">🔏 Change Branch Password</button></nav>
                 <nav class="nav"><button onclick="window.location.href = 'admin.html'">🔗 Developer</button></nav>
+                <nav class="nav"><button id="aboutDevNav">ℹ️ About Us / Developer</button></nav>
             </div>
             <div class="sidebar-foot"><button class="logout" id="logoutBtn">↪ Back / Logout</button></div>
         </aside>
@@ -1670,6 +1711,8 @@
                                 placeholder="e.g. Gola Beding Sheet"></div>
                         <div class="form-group"><label>Item Size *</label><input id="itemSize" required
                                 placeholder="e.g. King / 90x100"></div>
+                        <div class="form-group"><label>Category *</label><input id="itemCategory" list="categoryList"
+                                required placeholder="e.g. Bedsheet / Pillow / Comforter"></div>
                         <div class="form-group"><label>Length (optional)</label><input id="itemLength"
                                 placeholder="e.g. 100"></div>
                         <div class="form-group"><label>Width (optional)</label><input id="itemWidth"
@@ -1682,6 +1725,19 @@
                                 min="0" step="0.01" required></div>
                         <div class="form-group"><label>Opening Stock</label><input type="number" id="itemOpeningStock"
                                 min="0" step="1" value="0"></div>
+                        <div class="form-group full">
+                            <label>Item Image (optional — stored as base64 plain text)</label>
+                            <div class="image-upload">
+                                <input type="file" id="itemImageInput" accept="image/*" hidden>
+                                <button type="button" class="btn btn-secondary" id="itemImageBtn">📷 Choose Image</button>
+                                <button type="button" class="btn btn-light" id="itemImageClear">✕ Clear</button>
+                                <span class="help" id="itemImageInfo">No image selected.</span>
+                            </div>
+                            <div id="itemImagePreviewWrap" style="margin-top:8px;display:none">
+                                <img id="itemImagePreview" alt="Item preview"
+                                    style="max-height:130px;border-radius:8px;border:1px solid var(--border)">
+                            </div>
+                        </div>
                         <div class="form-group full"><label>Description</label><textarea id="itemDescription"
                                 placeholder="Item description, quality, pattern or other notes..."></textarea></div>
                     </div>
@@ -1884,9 +1940,12 @@
                 <h3 id="reportTitle">Report</h3><button class="modal-close" data-close="reportModal">✕</button>
             </div>
             <div class="modal-body" id="reportBody"></div>
-            <div class="modal-foot"><button class="btn btn-secondary" data-close="reportModal">Close</button><button
-                    class="btn btn-primary" id="printReportBtn">🖨 Print / PDF</button><button class="btn btn-success"
-                    id="exportReportBtn">⬇ Export CSV</button></div>
+            <div class="modal-foot">
+                <button class="btn btn-secondary" data-close="reportModal">Close</button>
+                <button class="btn btn-info" id="exportReportHTMLBtn">⬇ Export HTML</button>
+                <button class="btn btn-primary" id="printReportBtn">🖨 Print / PDF</button>
+                <button class="btn btn-success" id="exportReportBtn">⬇ Export CSV</button>
+            </div>
         </div>
     </div>
 
@@ -1899,8 +1958,11 @@
             <div class="voucher-wrap">
                 <div class="voucher" id="voucherPreview"></div>
             </div>
-            <div class="modal-foot"><button class="btn btn-secondary" data-close="voucherModal">Close</button><button
-                    class="btn btn-primary" id="printVoucherBtn">🖨 Print Voucher</button></div>
+            <div class="modal-foot">
+                <button class="btn btn-secondary" data-close="voucherModal">Close</button>
+                <button class="btn btn-info" id="exportVoucherHTMLBtn">⬇ Export HTML</button>
+                <button class="btn btn-primary" id="printVoucherBtn">🖨 Print Voucher</button>
+            </div>
         </div>
     </div>
 
@@ -1911,6 +1973,7 @@
     </div>
     <div class="toast" id="toast"></div>
     <div id="printRoot"></div>
+    <datalist id="categoryList"></datalist>
 
     <script>
         "use strict";
@@ -1945,6 +2008,7 @@
         let saleLines = [];
         let purchaseLines = [];
         let currentReport = { type: "", records: [], title: "" };
+        let currentItemImage = "";
 
         const $ = id => document.getElementById(id);
         const money = n => "Rs. " + (Number(n) || 0).toLocaleString("en-PK", { maximumFractionDigits: 2 });
@@ -1991,6 +2055,7 @@
             db.items.forEach(i => {
                 i.id = String(i.id || uid("itm"));
                 i.name = String(i.name || "");
+                i.category = String(i.category || "");
                 i.size = String(i.size || "");
                 i.length = String(i.length || "");
                 i.width = String(i.width || "");
@@ -1999,6 +2064,7 @@
                 i.price = num(i.price);
                 i.openingStock = Math.max(0, Math.floor(num(i.openingStock)));
                 i.description = String(i.description || "");
+                i.image = String(i.image || "");
             });
             db.sales.forEach(s => {
                 s.id = String(s.id || uid("sal")); s.invoice = String(s.invoice || makeNumber("INV"));
@@ -2140,41 +2206,132 @@
         <div class="kpi-line"><span>Available stock units</span><strong>${formatQty(stockTotal)}</strong></div>`;
         }
 
+        /* Category helpers */
+        function allCategories() {
+            return [...new Set(db.items.map(i => String(i.category || "").trim()).filter(Boolean))].sort((a, b) => a.localeCompare(b));
+        }
+        function refreshCategoryDatalist() {
+            $("categoryList").innerHTML = allCategories().map(c => `<option value="${safe(c)}"></option>`).join("");
+        }
+        function populateCategoryFilter() {
+            const sel = $("itemCategoryFilter"); if (!sel) return;
+            const cur = sel.value;
+            sel.innerHTML = '<option value="">All Categories</option>' + allCategories().map(c => `<option value="${safe(c)}">${safe(c)}</option>`).join("");
+            sel.value = allCategories().includes(cur) ? cur : "";
+        }
+
         /* Items */
         function renderItems() {
-            const q = $("itemSearch").value.trim().toLowerCase(), f = $("itemStockFilter").value;
+            const q = $("itemSearch").value.trim().toLowerCase();
+            const f = $("itemStockFilter").value;
+            const c = $("itemCategoryFilter") ? $("itemCategoryFilter").value : "";
             const list = db.items.filter(i => {
                 const st = stockOf(i.id);
-                const text = [i.name, i.size, i.material, i.color, i.description, i.length, i.width].join(" ").toLowerCase();
-                return (!q || text.includes(q)) && (!f || (f === "in" && st > 0) || (f === "low" && st > 0 && st <= 5) || (f === "out" && st <= 0));
+                const text = [i.name, i.category, i.size, i.material, i.color, i.description, i.length, i.width].join(" ").toLowerCase();
+                return (!q || text.includes(q))
+                    && (!c || String(i.category) === String(c))
+                    && (!f || (f === "in" && st > 0) || (f === "low" && st > 0 && st <= 5) || (f === "out" && st <= 0));
             });
             $("itemsBody").innerHTML = list.length ? list.map(i => {
-                const st = stockOf(i.id), idx = db.items.indexOf(i);
-                return `<tr><td><strong>${safe(i.name)}</strong></td><td>${safe(i.size)}</td><td>${safe(i.length || "—")}</td><td>${safe(i.width || "—")}</td>
-        <td>${safe(i.material)}</td><td>${safe(i.color)}</td><td>${money(i.price)}</td>
+                const st = stockOf(i.id);
+                const img = i.image
+                    ? `<img class="item-thumb" src="${safe(i.image)}" alt="${safe(i.name)}" title="Stored as base64 text">`
+                    : `<div class="item-thumb-empty" title="No image">📦</div>`;
+                const desc = String(i.description || "");
+                return `<tr>
+        <td>${img}</td>
+        <td><strong>${safe(i.name)}</strong></td>
+        <td>${i.category ? `<span class="badge badge-blue">${safe(i.category)}</span>` : "—"}</td>
+        <td>${safe(i.size)}</td>
+        <td>${safe(i.length || "—")}</td>
+        <td>${safe(i.width || "—")}</td>
+        <td>${safe(i.material)}</td>
+        <td>${safe(i.color)}</td>
+        <td>${money(i.price)}</td>
         <td class="${st <= 0 ? "stock-low" : st <= 5 ? "stock-low" : "stock-ok"}">${formatQty(st)} ${st <= 0 ? '<span class="badge badge-red">Out</span>' : st <= 5 ? '<span class="badge badge-orange">Low</span>' : ''}</td>
-        <td title="${safe(i.description)}">${safe(i.description || "—").slice(0, 40)}${i.description.length > 40 ? "…" : ""}</td>
+        <td title="${safe(desc)}">${safe(desc || "—").slice(0, 40)}${desc.length > 40 ? "…" : ""}</td>
         <td><div class="actions"><button class="icon-btn" title="Edit" onclick="editItem('${safe(i.id)}')">✏️</button><button class="icon-btn" title="Sale" onclick="openSaleModal('${safe(i.id)}')">🧾</button><button class="icon-btn" title="Delete" onclick="deleteItem('${safe(i.id)}')">🗑️</button></div></td></tr>`;
-            }).join("") : '<tr><td colspan="10" class="empty">No item records found.</td></tr>';
+            }).join("") : '<tr><td colspan="12" class="empty">No item records found.</td></tr>';
+        }
+        function updateItemImagePreview() {
+            const wrap = $("itemImagePreviewWrap"), img = $("itemImagePreview"), info = $("itemImageInfo");
+            if (currentItemImage) {
+                img.src = currentItemImage;
+                wrap.style.display = "block";
+                info.textContent = "Image ready • " + Math.round(currentItemImage.length / 1024) + " KB base64 text";
+            } else {
+                img.removeAttribute("src");
+                wrap.style.display = "none";
+                info.textContent = "No image selected.";
+            }
+        }
+        /* Convert any chosen image into compressed base64 plain text using canvas. */
+        function compressImageToBase64(file, maxSize = 520, quality = 0.78) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = new Image();
+                    img.onload = () => {
+                        let width = img.naturalWidth || img.width;
+                        let height = img.naturalHeight || img.height;
+                        if (width >= height && width > maxSize) { height = Math.round(height * maxSize / width); width = maxSize; }
+                        else if (height > maxSize) { width = Math.round(width * maxSize / height); height = maxSize; }
+                        const canvas = document.createElement("canvas");
+                        canvas.width = Math.max(1, width); canvas.height = Math.max(1, height);
+                        const ctx = canvas.getContext("2d");
+                        ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        resolve(canvas.toDataURL("image/jpeg", quality));
+                    };
+                    img.onerror = () => reject(new Error("Invalid or unsupported image file."));
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => reject(new Error("Could not read the selected image."));
+                reader.readAsDataURL(file);
+            });
         }
         function openItemModal(id = "") {
             $("itemForm").reset(); $("itemId").value = id || ""; $("itemOpeningStock").value = 0;
+            currentItemImage = "";
+            refreshCategoryDatalist();
             if (id) {
                 const i = db.items.find(x => String(x.id) === String(id)); if (!i) return;
                 $("itemModalTitle").textContent = "Edit Item";
-                $("itemName").value = i.name; $("itemSize").value = i.size; $("itemLength").value = i.length; $("itemWidth").value = i.width;
+                $("itemName").value = i.name;
+                $("itemCategory").value = i.category || "";
+                $("itemSize").value = i.size; $("itemLength").value = i.length; $("itemWidth").value = i.width;
                 $("itemMaterial").value = i.material; $("itemColor").value = i.color; $("itemPrice").value = i.price; $("itemOpeningStock").value = i.openingStock; $("itemDescription").value = i.description;
+                currentItemImage = i.image || "";
             } else $("itemModalTitle").textContent = "Add Item";
+            $("itemImageInput").value = "";
+            updateItemImagePreview();
             $("itemModal").classList.add("open"); setTimeout(() => $("itemName").focus(), 50);
         }
         function editItem(id) { openItemModal(id) }
         async function saveItem(e) {
             e.preventDefault();
             const id = $("itemId").value.trim();
-            const record = { id: id || uid("itm"), name: $("itemName").value.trim(), size: $("itemSize").value.trim(), length: $("itemLength").value.trim(), width: $("itemWidth").value.trim(), material: $("itemMaterial").value.trim(), color: $("itemColor").value.trim(), price: num($("itemPrice").value), openingStock: Math.max(0, Math.floor(num($("itemOpeningStock").value))), description: $("itemDescription").value.trim() };
-            if (!record.name || !record.size || !record.material || !record.color) { alert("Please complete all required item fields."); return }
+            const record = {
+                id: id || uid("itm"),
+                name: $("itemName").value.trim(),
+                category: $("itemCategory").value.trim(),
+                size: $("itemSize").value.trim(),
+                length: $("itemLength").value.trim(),
+                width: $("itemWidth").value.trim(),
+                material: $("itemMaterial").value.trim(),
+                color: $("itemColor").value.trim(),
+                price: num($("itemPrice").value),
+                openingStock: Math.max(0, Math.floor(num($("itemOpeningStock").value))),
+                description: $("itemDescription").value.trim(),
+                image: currentItemImage || ""
+            };
+            if (!record.name || !record.category || !record.size || !record.material || !record.color) { alert("Please complete all required item fields (name, category, size, material, color)."); return }
             if (record.price < 0) { alert("Price cannot be negative."); return }
-            if (id) { const n = db.items.findIndex(x => String(x.id) === id); if (n < 0) return; record.openingStock = db.items[n].openingStock; db.items[n] = record }
+            if (id) {
+                const n = db.items.findIndex(x => String(x.id) === id); if (n < 0) return;
+                record.openingStock = db.items[n].openingStock;
+                db.items[n] = record;
+            }
             else db.items.unshift(record);
             if (await commit(id ? "Updating item online..." : "Saving item online...", id ? "Item updated successfully." : "Item added successfully.")) $("itemModal").classList.remove("open");
         }
@@ -2350,8 +2507,8 @@
             const records = [...db.items].sort((a, b) => a.name.localeCompare(b.name)); currentReport = { type: "stock", records, title: "Stock Report" };
             const units = records.reduce((a, i) => a + stockOf(i.id), 0), value = records.reduce((a, i) => a + stockOf(i.id) * num(i.price), 0);
             let html = reportHeader("Stock Report") + reportSummary([["Items", records.length], ["Stock Units", formatQty(units)], ["Retail Stock Value", money(value)], ["Low / Out", records.filter(i => stockOf(i.id) <= 5).length]]);
-            html += `<div class="table-wrap"><table><thead><tr><th>Item</th><th>Size</th><th>Material</th><th>Color</th><th>Price</th><th>Stock</th><th>Stock Value</th><th>Description</th></tr></thead><tbody>`;
-            html += records.map(i => `<tr><td>${safe(i.name)}</td><td>${safe(i.size)}</td><td>${safe(i.material)}</td><td>${safe(i.color)}</td><td>${money(i.price)}</td><td>${formatQty(stockOf(i.id))}</td><td>${money(stockOf(i.id) * i.price)}</td><td>${safe(i.description || "—")}</td></tr>`).join("");
+            html += `<div class="table-wrap"><table><thead><tr><th>Image</th><th>Item</th><th>Category</th><th>Size</th><th>Material</th><th>Color</th><th>Price</th><th>Stock</th><th>Stock Value</th><th>Description</th></tr></thead><tbody>`;
+            html += records.map(i => `<tr><td>${i.image ? `<img src="${safe(i.image)}" alt="" style="width:38px;height:38px;object-fit:cover;border-radius:6px;border:1px solid #ddd">` : "—"}</td><td>${safe(i.name)}</td><td>${safe(i.category || "—")}</td><td>${safe(i.size)}</td><td>${safe(i.material)}</td><td>${safe(i.color)}</td><td>${money(i.price)}</td><td>${formatQty(stockOf(i.id))}</td><td>${money(stockOf(i.id) * i.price)}</td><td>${safe(i.description || "—")}</td></tr>`).join("");
             html += `</tbody></table></div>${closeReportMarkup()}`; $("reportTitle").textContent = "Stock Report"; $("reportBody").innerHTML = html; $("reportModal").classList.add("open");
         }
         function openFinancialReport() {
@@ -2362,14 +2519,21 @@
             $("reportTitle").textContent = "Financial Summary"; $("reportBody").innerHTML = html; $("reportModal").classList.add("open");
         }
 
-        /* CSV / download */
+        /* CSV / download — every export goes through a manual location picker */
         function csvEscape(v) { return `"${String(v ?? "").replace(/"/g, '""')}"` }
+        function pickerTypes(ext) {
+            if (ext === "csv") return [{ description: "CSV file", accept: { "text/csv": [".csv"] } }];
+            if (ext === "json") return [{ description: "JSON file", accept: { "application/json": [".json"] } }];
+            if (ext === "html" || ext === "htm") return [{ description: "HTML file", accept: { "text/html": [".html"] } }];
+            if (ext === "txt") return [{ description: "Text file", accept: { "text/plain": [".txt"] } }];
+            return [];
+        }
         async function downloadBlob(blob, name) {
             const safeName = filenameSafe(name);
+            const ext = safeName.toLowerCase().match(/\.(csv|json|txt|html|htm)$/)?.[1] || "";
             try {
                 if (typeof window.showSaveFilePicker === "function") {
-                    const ext = safeName.toLowerCase().match(/\.(csv|json|txt)$/)?.[1] || "";
-                    const types = ext === "csv" ? [{ description: "CSV", accept: { "text/csv": [".csv"] } }] : ext === "json" ? [{ description: "JSON", accept: { "application/json": [".json"] } }] : [];
+                    const types = pickerTypes(ext);
                     const h = await window.showSaveFilePicker({ suggestedName: safeName, ...(types.length ? { types } : {}) });
                     const w = await h.createWritable(); await w.write(blob); await w.close(); return h.name || safeName;
                 }
@@ -2377,23 +2541,32 @@
             } catch (e) { if (e.name === "AbortError" || e.name === "NotAllowedError") return null; throw e }
         }
         async function exportItems() {
-            const rows = [["ID", "Item Name", "Size", "Length", "Width", "Material", "Color", "Sale Price", "Opening Stock", "Current Stock", "Description"], ...db.items.map(i => [i.id, i.name, i.size, i.length, i.width, i.material, i.color, i.price, i.openingStock, stockOf(i.id), i.description])];
-            const csv = rows.map(r => r.map(csvEscape).join(",")).join("\n"); await downloadBlob(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }), `PGB_Items_${filenameSafe(branchName)}_${today()}.csv`); toast("Items CSV exported.");
+            const rows = [["ID", "Item Name", "Category", "Size", "Length", "Width", "Material", "Color", "Sale Price", "Opening Stock", "Current Stock", "Has Image", "Description"], ...db.items.map(i => [i.id, i.name, i.category, i.size, i.length, i.width, i.material, i.color, i.price, i.openingStock, stockOf(i.id), i.image ? "Yes" : "", i.description])];
+            const csv = rows.map(r => r.map(csvEscape).join(",")).join("\n");
+            const saved = await downloadBlob(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }), `PGB_Items_${filenameSafe(branchName)}_${today()}.csv`);
+            if (saved) toast("Items CSV exported.");
         }
         async function exportSales() {
             const rows = [["Invoice", "Date", "Customer", "Phone", "Items", "Subtotal", "Discount", "Total", "Paid", "Balance", "Method", "Note"], ...db.sales.map(s => [s.invoice, s.date, s.customer, s.phone, saleItemsText(s), saleSubtotal(s), s.discount, saleTotal(s), s.paid, saleBalance(s), s.method, s.note])];
-            const csv = rows.map(r => r.map(csvEscape).join(",")).join("\n"); await downloadBlob(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }), `PGB_Sales_${filenameSafe(branchName)}_${today()}.csv`); toast("Sales CSV exported.");
+            const csv = rows.map(r => r.map(csvEscape).join(",")).join("\n");
+            const saved = await downloadBlob(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }), `PGB_Sales_${filenameSafe(branchName)}_${today()}.csv`);
+            if (saved) toast("Sales CSV exported.");
         }
         async function exportPurchases() {
             const rows = [["Bill", "Date", "Supplier", "Phone", "Items", "Total", "Paid", "Balance", "Method", "Reference", "Note"], ...db.purchases.map(p => [p.bill, p.date, p.supplier, p.phone, p.items.map(x => `${itemName(x.itemId)} x ${x.qty}`).join("; "), purchaseTotal(p), p.paid, purchaseBalance(p), p.method, p.reference, p.note])];
-            const csv = rows.map(r => r.map(csvEscape).join(",")).join("\n"); await downloadBlob(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }), `PGB_Purchases_${filenameSafe(branchName)}_${today()}.csv`); toast("Purchases CSV exported.");
+            const csv = rows.map(r => r.map(csvEscape).join(",")).join("\n");
+            const saved = await downloadBlob(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }), `PGB_Purchases_${filenameSafe(branchName)}_${today()}.csv`);
+            if (saved) toast("Purchases CSV exported.");
         }
         async function exportExpenses() {
             const rows = [["ID", "Date", "Category", "Description", "Amount", "Method", "Note"], ...db.expenses.map(e => [e.id, e.date, e.category, e.description, e.amount, e.method, e.note])];
-            const csv = rows.map(r => r.map(csvEscape).join(",")).join("\n"); await downloadBlob(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }), `PGB_Expenses_${filenameSafe(branchName)}_${today()}.csv`); toast("Expenses CSV exported.");
+            const csv = rows.map(r => r.map(csvEscape).join(",")).join("\n");
+            const saved = await downloadBlob(new Blob(["\ufeff" + csv], { type: "text/csv;charset=utf-8" }), `PGB_Expenses_${filenameSafe(branchName)}_${today()}.csv`);
+            if (saved) toast("Expenses CSV exported.");
         }
         async function backup() {
-            await downloadBlob(new Blob([JSON.stringify(db, null, 2)], { type: "application/json" }), `PGB_${filenameSafe(branchName)}_Backup_${today()}.json`); toast("Branch backup exported.");
+            const saved = await downloadBlob(new Blob([JSON.stringify(db, null, 2)], { type: "application/json" }), `PGB_${filenameSafe(branchName)}_Backup_${today()}.json`);
+            if (saved) toast("Branch backup exported.");
         }
         function restore(file) {
             showLoading("Reading branch backup...");
@@ -2409,21 +2582,37 @@
             r.onerror = () => { hideLoading(); alert("Could not read backup file.") }; r.readAsText(file);
         }
 
-        /* Professional print / voucher */
+        /* Professional print / voucher — shared stylesheet for popups and HTML exports */
+        const PRINT_CSS = `@page{size:A4 landscape;margin:10mm}body{margin:0;font-family:Arial,sans-serif;background:#fff;color:#111}.print-sheet{position:relative;background:#fff;color:#111;padding:26px;font-family:Arial,sans-serif}.watermark{position:absolute;inset:0;background:url("bg.png") center/260px no-repeat;opacity:.045;pointer-events:none}.print-sheet h1{font-size:25px;margin:0 0 3px}.print-sheet .sub{font-size:11px;color:#667085;margin-bottom:15px}.print-brand{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #7a4b18;padding-bottom:10px;margin-bottom:15px}.print-brand img{width:70px;height:50px;object-fit:contain}.print-summary{display:flex;gap:10px;margin-bottom:15px;flex-wrap:wrap}.print-box{border:1px solid #ddd;padding:8px 11px;border-radius:7px;min-width:125px}.print-box small{display:block;color:#667085;font-size:9px}.print-box strong{display:block;margin-top:3px;font-size:14px}.print-sheet table{width:100%;border-collapse:collapse}.print-sheet th{background:#3d260f;color:#fff;padding:7px;font-size:9px;text-align:left}.print-sheet td{border:1px solid #ddd;padding:7px;font-size:9px}.voucher{position:relative;width:800px;max-width:100%;margin:auto;background:#fff;border:1px solid #ccc;overflow:hidden}.voucher .watermark{background-size:310px}.v-head{background:linear-gradient(135deg,#4d2b0d,#8c571e);color:#fff;padding:20px 25px;display:flex;justify-content:space-between;gap:20px}.v-head img{height:42px;max-width:125px;object-fit:contain;background:#fff2;padding:3px;border-radius:6px}.v-head h1{font-size:24px;margin:7px 0 2px}.v-head p{font-size:10px;opacity:.85}.v-meta{text-align:right;font-size:11px;line-height:1.8}.v-body{position:relative;padding:24px 25px 30px}.v-title{font-size:11px;font-weight:900;color:#667085;letter-spacing:.8px;margin-bottom:10px}.v-grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid #ddd;border-radius:8px;overflow:hidden;margin-bottom:16px}.v-field{padding:11px;border-bottom:1px solid #ddd}.v-field:nth-child(odd){border-right:1px solid #ddd}.v-field small{display:block;color:#667085;font-size:8px;font-weight:800;margin-bottom:3px}.v-field strong{font-size:12px}.v-total{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid #ddd;border-radius:8px;overflow:hidden}.v-total div{padding:15px;text-align:center;background:#fafafa;border-right:1px solid #ddd}.v-total div:last-child{border-right:0}.v-total small{display:block;color:#667085;font-size:8px;font-weight:900}.v-total strong{display:block;font-size:17px;margin-top:5px}.v-foot{display:flex;justify-content:space-between;gap:30px;padding-top:48px;font-size:10px;color:#667085}.sig{width:210px;text-align:center;border-top:1px solid #888;padding-top:6px}`;
+        function standaloneHTML(title, inner) {
+            return `<!doctype html><html><head><meta charset="utf-8"><title>${safe(title)}</title><style>${PRINT_CSS}</style></head><body>${inner}</body></html>`;
+        }
         function printHTML(title, html) {
             const w = window.open("", "_blank", "width=1200,height=850");
             if (!w) { alert("Please allow pop-ups for printing."); return }
             w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${safe(title)}</title>
-    <style>@page{size:A4 landscape;margin:10mm}body{margin:0;font-family:Arial,sans-serif;background:#fff}.print-sheet{position:relative;background:#fff;color:#111;padding:26px;font-family:Arial,sans-serif}.watermark{position:absolute;inset:0;background:url("bg.png") center/260px no-repeat;opacity:.045;pointer-events:none}.print-sheet h1{font-size:25px;margin:0 0 3px}.print-sheet .sub{font-size:11px;color:#667085;margin-bottom:15px}.print-brand{display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #7a4b18;padding-bottom:10px;margin-bottom:15px}.print-brand img{width:70px;height:50px;object-fit:contain}.print-summary{display:flex;gap:10px;margin-bottom:15px}.print-box{border:1px solid #ddd;padding:8px 11px;border-radius:7px;min-width:125px}.print-box small{display:block;color:#667085;font-size:9px}.print-box strong{display:block;margin-top:3px;font-size:14px}.print-sheet table{width:100%;border-collapse:collapse}.print-sheet th{background:#3d260f;color:#fff;padding:7px;font-size:9px;text-align:left}.print-sheet td{border:1px solid #ddd;padding:7px;font-size:9px}.v-head{background:#6d4215;color:#fff;padding:20px}.v-head img{height:42px}.voucher{position:relative;width:800px;margin:auto}.v-grid{display:grid;grid-template-columns:1fr 1fr}.v-field{padding:11px;border:1px solid #ddd}.v-total{display:grid;grid-template-columns:repeat(3,1fr)}.v-total div{padding:15px;border:1px solid #ddd;text-align:center}.v-foot{display:flex;justify-content:space-between;padding-top:48px}.sig{width:210px;text-align:center;border-top:1px solid #888;padding-top:6px}</style></head><body>${html}<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`);
+    <style>${PRINT_CSS}</style></head><body>${html}<script>window.onload=function(){setTimeout(function(){window.print()},300)}<\/script></body></html>`);
             w.document.close();
         }
         function printCurrentReport() { printHTML(currentReport.title, $("reportBody").innerHTML) }
+        async function exportReportHTML() {
+            const title = currentReport.title || "PGB Report";
+            const html = standaloneHTML(title, $("reportBody").innerHTML);
+            const saved = await downloadBlob(new Blob([html], { type: "text/html;charset=utf-8" }), `PGB_${filenameSafe(title)}_${filenameSafe(branchName)}_${today()}.html`);
+            if (saved) toast("Report exported as HTML.");
+        }
+        async function exportVoucherHTML() {
+            const title = $("voucherTitle").textContent || "PGB Voucher";
+            const html = standaloneHTML(title, `<div class="voucher-wrap" style="background:#eef0f3;padding:20px">${$("voucherPreview").innerHTML}</div>`);
+            const saved = await downloadBlob(new Blob([html], { type: "text/html;charset=utf-8" }), `PGB_${filenameSafe(title)}_${filenameSafe(branchName)}_${today()}.html`);
+            if (saved) toast("Voucher exported as HTML.");
+        }
         async function exportCurrentReportCSV() {
             if (currentReport.type === "sales") return exportSales();
             if (currentReport.type === "purchases") return exportPurchases();
             if (currentReport.type === "expenses") return exportExpenses();
             if (currentReport.type === "stock") return exportItems();
-            toast("The financial summary is intended for printing.");
+            toast("The financial summary is intended for printing or HTML export.");
         }
         function showVoucher(type, id) {
             let html = "", title = "";
@@ -2448,7 +2637,11 @@
 
         /* Refresh */
         function refreshUI() {
-            normalize(); updateDashboard(); renderItems(); renderSales(); renderPurchases(); renderExpenses();
+            normalize();
+            refreshCategoryDatalist();
+            populateCategoryFilter();
+            updateDashboard();
+            renderItems(); renderSales(); renderPurchases(); renderExpenses();
             $("settingsBranch").textContent = branchName; $("settingsFile").textContent = branchFile;
         }
 
@@ -2462,23 +2655,49 @@
             $("addItemBtn").onclick = () => openItemModal(); $("addSaleBtn").onclick = () => openSaleModal(); $("addPurchaseBtn").onclick = openPurchaseModal; $("addExpenseBtn").onclick = () => openExpenseModal();
             $("itemForm").onsubmit = saveItem; $("saleForm").onsubmit = saveSale; $("purchaseForm").onsubmit = savePurchase; $("expenseForm").onsubmit = saveExpense;
             $("itemSearch").oninput = renderItems; $("itemStockFilter").onchange = renderItems;
+            $("itemCategoryFilter").onchange = renderItems;
             $("salesSearch").oninput = renderSales; $("salesDateFilter").onchange = renderSales;
             $("purchasesSearch").oninput = renderPurchases; $("purchasesDateFilter").onchange = renderPurchases;
             $("expenseSearch").oninput = renderExpenses; $("expenseDateFilter").onchange = renderExpenses;
             $("addSaleLine").onclick = () => addSaleLine(); $("saleDiscount").oninput = updateSaleSummary; $("salePaid").oninput = updateSaleSummary;
             $("addPurchaseLine").onclick = () => addPurchaseLine(); $("purchasePaid").oninput = updatePurchaseSummary;
+
+            /* Item image handlers */
+            $("itemImageBtn").onclick = () => $("itemImageInput").click();
+            $("itemImageClear").onclick = () => { currentItemImage = ""; $("itemImageInput").value = ""; updateItemImagePreview(); };
+            $("itemImageInput").onchange = async e => {
+                const file = e.target.files && e.target.files[0];
+                if (!file) return;
+                if (!file.type.startsWith("image/")) { alert("Please choose a valid image file."); e.target.value = ""; return }
+                showLoading("Converting image to base64 text...");
+                try {
+                    currentItemImage = await compressImageToBase64(file);
+                    updateItemImagePreview();
+                    toast("Image converted to base64 plain text.");
+                } catch (err) { alert(err.message); }
+                finally { hideLoading(); }
+            };
+
             $("exportItemsBtn").onclick = async () => { showLoading("Exporting items..."); try { await exportItems() } finally { hideLoading() } };
             $("exportSalesBtn").onclick = async () => { showLoading("Exporting sales..."); try { await exportSales() } finally { hideLoading() } };
             $("exportPurchasesBtn").onclick = async () => { showLoading("Exporting purchases..."); try { await exportPurchases() } finally { hideLoading() } };
             $("exportExpensesBtn").onclick = async () => { showLoading("Exporting expenses..."); try { await exportExpenses() } finally { hideLoading() } };
             $("printItemsBtn").onclick = () => openStockReport(); $("printSalesBtn").onclick = openSalesReport; $("printPurchasesBtn").onclick = openPurchaseReport; $("printExpensesBtn").onclick = openExpenseReport;
             $("reportSalesBtn").onclick = openSalesReport; $("reportPurchasesBtn").onclick = openPurchaseReport; $("reportExpensesBtn").onclick = openExpenseReport; $("reportStockBtn").onclick = openStockReport; $("reportFinancialBtn").onclick = openFinancialReport;
-            $("printReportBtn").onclick = printCurrentReport; $("exportReportBtn").onclick = async () => { showLoading("Exporting report..."); try { await exportCurrentReportCSV() } finally { hideLoading() } };
-            $("printVoucherBtn").onclick = printVoucher; $("quickVoucherNav").onclick = () => openSaleModal();
-            $("backupBtn").onclick = backup; $("backupSettingsBtn").onclick = backup; $("restoreBtn").onclick = () => $("restoreFile").click(); $("restoreSettingsBtn").onclick = () => $("restoreFile").click(); $("restoreFile").onchange = e => e.target.files[0] && restore(e.target.files[0]);
+            $("printReportBtn").onclick = printCurrentReport;
+            $("exportReportBtn").onclick = async () => { showLoading("Exporting report..."); try { await exportCurrentReportCSV() } finally { hideLoading() } };
+            $("exportReportHTMLBtn").onclick = async () => { showLoading("Exporting report HTML..."); try { await exportReportHTML() } finally { hideLoading() } };
+            $("printVoucherBtn").onclick = printVoucher;
+            $("exportVoucherHTMLBtn").onclick = async () => { showLoading("Exporting voucher HTML..."); try { await exportVoucherHTML() } finally { hideLoading() } };
+            $("quickVoucherNav").onclick = () => openSaleModal();
+            $("backupBtn").onclick = async () => { showLoading("Preparing backup..."); try { await backup() } finally { hideLoading() } };
+            $("backupSettingsBtn").onclick = async () => { showLoading("Preparing backup..."); try { await backup() } finally { hideLoading() } };
+            $("restoreBtn").onclick = () => $("restoreFile").click(); $("restoreSettingsBtn").onclick = () => $("restoreFile").click(); $("restoreFile").onchange = e => e.target.files[0] && restore(e.target.files[0]);
             $("reloadBtn").onclick = loadBranch; $("reloadSettingsBtn").onclick = loadBranch;
             $("saveSettingsBtn").onclick = async () => { showLoading("Saving branch data..."); try { await saveBranchFile(); toast("Branch data saved.") } catch (e) { alert(e.message) } finally { hideLoading() } };
             $("printDashboardBtn").onclick = printDashboard;
+            $("aboutDevNav").onclick = () => window.location.replace("https://fridaysoftwaretechnology.github.io/admin/");
+
             document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $(b.dataset.close).classList.remove("open"));
             document.querySelectorAll(".modal").forEach(m => m.addEventListener("click", e => { if (e.target === m) m.classList.remove("open") }));
             document.addEventListener("keydown", e => { if (e.key === "Escape") document.querySelectorAll(".modal.open").forEach(m => m.classList.remove("open")) });
