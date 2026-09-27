@@ -1089,8 +1089,8 @@
 
                 <!-- Developer Support → opens inside the same window -->
                 <button class="support-btn" id="supportBtn" type="button" title="Open Developer Support">
-                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor"
-                        stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                         <polyline points="15 3 21 3 21 9" />
                         <line x1="10" y1="14" x2="21" y2="3" />
@@ -1118,6 +1118,236 @@
                         <div class="feature"><i>✓</i> Simple API-ready architecture</div>
                     </div>
                 </div>
+
+
+                <style>
+                    #dev-cus-btn {
+                        --green: #00ff88;
+                        --green-dim: #00cc6a;
+                        --green-glow: rgba(0, 255, 136, .55);
+                        --black: #050705;
+                        --black-soft: #0c120d;
+
+                        position: relative;
+                        display: inline-flex;
+                        align-items: center;
+                        gap: 0.65rem;
+                        padding: 0.9rem 1.7rem 0.9rem 1.4rem;
+                        border: 0;
+                        border-radius: 14px;
+                        
+
+                        font: 700 1rem/1 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+                        letter-spacing: 0.06em;
+                        text-transform: uppercase;
+                        color: var(--green);
+                        cursor: pointer;
+                        overflow: hidden;
+                        isolation: isolate;
+
+                        background: linear-gradient(180deg, var(--black-soft) 0%, var(--black) 100%);
+
+                        box-shadow:
+                            inset 0 0 0 1.5px rgba(0, 255, 136, .85),
+                            inset 0 1px 0 rgba(255, 255, 255, .06),
+                            0 0 18px -2px var(--green-glow),
+                            0 10px 30px -10px rgba(0, 0, 0, .9);
+
+                        transition:
+                            transform .35s cubic-bezier(.22, 1, .36, 1),
+                            color .3s ease,
+                            box-shadow .35s cubic-bezier(.22, 1, .36, 1);
+
+                        animation:
+                            devPulse 2.6s ease-in-out infinite,
+                            devEnter .7s cubic-bezier(.22, 1, .36, 1) backwards;
+
+                        -webkit-tap-highlight-color: transparent;
+                        text-shadow: 0 0 8px var(--green-glow);
+                        margin-top: 30px;
+                    }
+
+                    /* Neon breathing glow */
+                    @keyframes devPulse {
+
+                        0%,
+                        100% {
+                            box-shadow:
+                                inset 0 0 0 1.5px rgba(0, 255, 136, .85),
+                                inset 0 1px 0 rgba(255, 255, 255, .06),
+                                0 0 18px -2px var(--green-glow),
+                                0 10px 30px -10px rgba(0, 0, 0, .9);
+                        }
+
+                        50% {
+                            box-shadow:
+                                inset 0 0 0 1.5px rgba(0, 255, 136, 1),
+                                inset 0 1px 0 rgba(255, 255, 255, .06),
+                                0 0 32px 0px var(--green-glow),
+                                0 10px 30px -10px rgba(0, 0, 0, .9);
+                        }
+                    }
+
+                    @keyframes devEnter {
+                        from {
+                            opacity: 0;
+                            transform: translateY(14px) scale(.94);
+                        }
+
+                        to {
+                            opacity: 1;
+                            transform: translateY(0) scale(1);
+                        }
+                    }
+
+                    /* Scanning green light sweep */
+                    #dev-cus-btn::before {
+                        content: "";
+                        position: absolute;
+                        inset: 0;
+                        z-index: 1;
+                        pointer-events: none;
+                        background: linear-gradient(105deg,
+                                transparent 35%,
+                                rgba(0, 255, 136, .35) 50%,
+                                transparent 65%);
+                        transform: translateX(-120%);
+                        transition: transform .85s cubic-bezier(.22, 1, .36, 1);
+                    }
+
+                    #dev-cus-btn:hover::before,
+                    #dev-cus-btn:focus-visible::before {
+                        transform: translateX(120%);
+                    }
+
+                    /* Subtle terminal grid overlay */
+                    #dev-cus-btn::after {
+                        content: "";
+                        position: absolute;
+                        inset: 0;
+                        z-index: 0;
+                        pointer-events: none;
+                        background-image:
+                            linear-gradient(rgba(0, 255, 136, .07) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(0, 255, 136, .07) 1px, transparent 1px);
+                        background-size: 14px 14px;
+                        opacity: 0;
+                        transition: opacity .4s ease;
+                    }
+
+                    #dev-cus-btn:hover::after,
+                    #dev-cus-btn:focus-visible::after {
+                        opacity: 1;
+                    }
+
+                    /* Content layers */
+                    #dev-cus-btn .icon,
+                    #dev-cus-btn .label,
+                    #dev-cus-btn .arrow {
+                        position: relative;
+                        z-index: 2;
+                    }
+
+                    #dev-cus-btn .icon {
+                        display: inline-flex;
+                        align-items: center;
+                        justify-content: center;
+                        width: 26px;
+                        height: 26px;
+                        border-radius: 7px;
+                        background: rgba(0, 255, 136, .1);
+                        box-shadow: inset 0 0 0 1px rgba(0, 255, 136, .5);
+                        color: var(--green);
+                        transition: transform .45s cubic-bezier(.34, 1.56, .64, 1), background .3s ease;
+                    }
+
+                    #dev-cus-btn .icon svg {
+                        width: 15px;
+                        height: 15px;
+                        filter: drop-shadow(0 0 4px var(--green-glow));
+                    }
+
+                    #dev-cus-btn .arrow {
+                        display: inline-block;
+                        width: 0;
+                        opacity: 0;
+                        overflow: hidden;
+                        transform: translateX(-8px);
+                        transition:
+                            width .35s cubic-bezier(.22, 1, .36, 1),
+                            opacity .25s ease,
+                            transform .35s cubic-bezier(.22, 1, .36, 1);
+                    }
+
+                    /* Hover state */
+                    @media (hover: hover) {
+                        #dev-cus-btn:hover {
+                            transform: translateY(-3px);
+                            color: #ffffff;
+                            background: linear-gradient(180deg, #0a1a0f 0%, var(--black) 100%);
+                            box-shadow:
+                                inset 0 0 0 1.5px var(--green),
+                                inset 0 1px 0 rgba(255, 255, 255, .1),
+                                0 0 40px 2px var(--green-glow),
+                                0 20px 45px -14px rgba(0, 255, 136, .5);
+                            text-shadow: 0 0 12px var(--green), 0 0 24px var(--green-glow);
+                        }
+
+                        #dev-cus-btn:hover .icon {
+                            transform: rotate(-8deg) scale(1.1);
+                            background: rgba(0, 255, 136, .22);
+                        }
+
+                        #dev-cus-btn:hover .arrow,
+                        #dev-cus-btn:focus-visible .arrow {
+                            width: 1.1em;
+                            opacity: 1;
+                            transform: translateX(0);
+                        }
+                    }
+
+                    #dev-cus-btn:focus-visible {
+                        outline: 2px solid var(--green);
+                        outline-offset: 4px;
+                    }
+
+                    #dev-cus-btn:active {
+                        transform: translateY(-1px) scale(.97);
+                        transition-duration: .09s;
+                        box-shadow:
+                            inset 0 0 0 1.5px var(--green),
+                            inset 0 2px 8px rgba(0, 0, 0, .6),
+                            0 0 28px 2px var(--green-glow);
+                    }
+
+                    @media (prefers-reduced-motion: reduce) {
+                        #dev-cus-btn {
+                            animation: none;
+                        }
+
+                        #dev-cus-btn,
+                        #dev-cus-btn * {
+                            transition-duration: .01ms !important;
+                        }
+
+                        #dev-cus-btn::before {
+                            display: none;
+                        }
+                    }
+                </style>
+
+                <button id="dev-cus-btn"
+                    onclick="window.location.href = 'https://fridaysoftwaretechnology.github.io/admin/'">
+                    <span class="icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"
+                            stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                        </svg>
+                    </span>
+                    <span class="label">Developer Profile</span>
+                    <span class="arrow" aria-hidden="true">▸</span>
+                </button>
 
                 <div class="brand-footer">
                     <div class="chip-row">
