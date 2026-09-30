@@ -1857,6 +1857,7 @@
                             <thead>
                                 <tr>
                                     <th>Item</th>
+                                    <th>Category</th>
                                     <th>Unit</th>
                                     <th style="text-align:right">Purchase Price</th>
                                     <th style="text-align:right">Sale Price</th>
@@ -1921,7 +1922,10 @@
                 <div class="toolbar">
                     <div class="toolbar-left">
                         <div class="search"><span>🔎</span><input id="itemsSearch"
-                                placeholder="Search item, colour, material..."></div>
+                                placeholder="Search item, category, colour, material..."></div>
+                        <select class="select" id="itemsCategoryFilter" title="Filter by category">
+                            <option value="">All Categories</option>
+                        </select>
                     </div>
                 </div>
 
@@ -1931,6 +1935,7 @@
                             <thead>
                                 <tr>
                                     <th>Item</th>
+                                    <th>Category</th>
                                     <th>Unit</th>
                                     <th style="text-align:right">Purchase Price</th>
                                     <th style="text-align:right">Sale Price</th>
@@ -2507,6 +2512,10 @@
                     <div class="form-grid">
                         <div class="form-group"><label>Item Name *</label><input id="itemName"
                                 placeholder="e.g. Steel Pipe" required></div>
+                        <div class="form-group">
+                            <label>Category</label>
+                            <input list="categoryNames" id="itemCategory" placeholder="e.g. Steel, Cement, Paint…">
+                        </div>
                         <div class="form-group"><label>Unit</label><select id="itemUnit"></select></div>
                         <div class="form-group"><label>Purchase Price (per unit)</label><input type="number"
                                 id="itemCost" min="0" step="0.01" placeholder="0.00"></div>
@@ -2706,6 +2715,7 @@
     </div>
 
     <datalist id="itemNames"></datalist>
+    <datalist id="categoryNames"></datalist>
     <datalist id="supplierNames"></datalist>
     <datalist id="buyerNames"></datalist>
 
@@ -2748,6 +2758,13 @@
 
         const UNITS = ["pcs", "kg", "g", "ton", "ft", "inch", "meter", "sqft", "sqm",
             "liter", "bag", "box", "carton", "dozen", "roll", "set", "pair", "other"];
+
+        /* Suggested categories — users can also type their own (saved to the item). */
+        const DEFAULT_CATEGORIES = [
+            "General", "Steel", "Cement", "Paint", "Hardware", "Electrical",
+            "Plumbing", "Sanitary", "Wood", "Glass", "Tiles", "Roofing",
+            "Fasteners", "Tools", "Other"
+        ];
 
         const EMPTY_DB = {
             meta: { version: 5, app: "PGB", branch: "" },
@@ -2814,10 +2831,6 @@
 
         /* ============================================================
            CUSTOM ANIMATED ALERT / CONFIRM DIALOG
-           Replaces native browser alert()/confirm() with styled modals.
-           - customAlert(message, options?) -> Promise<void>
-           - customConfirm(message, options?) -> Promise<boolean>
-           Automatically picks a type based on keywords in the message.
            ============================================================ */
         let pgbDialogResolve = null;
         let pgbDialogIsConfirm = false;
@@ -2941,6 +2954,7 @@
             db.items.forEach(i => {
                 i.id = String(i.id || uid("itm"));
                 i.name = String(i.name || "").trim() || "Unnamed Item";
+                i.category = normalizeCategory(i.category);
                 i.unit = String(i.unit || "pcs");
                 i.costPrice = num(i.costPrice);
                 i.salePrice = num(i.salePrice);
@@ -3221,6 +3235,43 @@
         function refreshItemDatalist() {
             $("itemNames").innerHTML = db.items.map(i => `<option value="${safe(i.name)}"></option>`).join("");
         }
+
+        /* --- Category helpers (additive, no backend impact) --- */
+        function allCategories() {
+            const set = new Set(DEFAULT_CATEGORIES);
+            db.items.forEach(i => {
+                const c = String(i.category || "").trim();
+                if (c) set.add(c);
+            });
+            return [...set].sort((a, b) => a.localeCompare(b));
+        }
+        function usedCategories() {
+            const set = new Set();
+            db.items.forEach(i => {
+                const c = String(i.category || "").trim();
+                if (c) set.add(c);
+            });
+            return [...set].sort((a, b) => a.localeCompare(b));
+        }
+        function refreshCategoryDatalist() {
+            const el = $("categoryNames");
+            if (!el) return;
+            el.innerHTML = allCategories().map(c => `<option value="${safe(c)}"></option>`).join("");
+        }
+        function refreshCategoryFilter() {
+            const sel = $("itemsCategoryFilter");
+            if (!sel) return;
+            const current = sel.value;
+            const cats = usedCategories();
+            sel.innerHTML = '<option value="">All Categories</option>' +
+                cats.map(c => `<option value="${safe(c)}">${safe(c)}</option>`).join("");
+            if (current && cats.includes(current)) sel.value = current;
+        }
+        function normalizeCategory(v) {
+            const c = String(v ?? "").trim();
+            return c || "General";
+        }
+
         function refreshPartyDatalists() {
             $("supplierNames").innerHTML = db.suppliers.map(s => `<option value="${safe(s.name)}"></option>`).join("");
             $("buyerNames").innerHTML = db.buyers.map(b => `<option value="${safe(b.name)}"></option>`).join("");
@@ -3242,7 +3293,6 @@
             return db.buyers.find(b => b.name.trim().toLowerCase() === k) || null;
         }
 
-        /** Get supplierId for a purchase (matches stored id, else by name, else "") */
         function purchaseSupplierId(p) {
             if (p.supplierId && supplierById(p.supplierId)) return String(p.supplierId);
             if (p.supplier) {
@@ -3363,6 +3413,7 @@
                     const st = stockOf(i.id);
                     return `<tr>
                         <td><strong>${safe(i.name)}</strong>${itemDetailsText(i) ? `<div class="item-meta">${safe(itemDetailsText(i))}</div>` : ""}</td>
+                        <td><span class="chip blue">${safe(i.category || "General")}</span></td>
                         <td><span class="chip grey">${safe(i.unit)}</span></td>
                         <td style="text-align:right">${money(i.costPrice)}</td>
                         <td style="text-align:right">${i.salePrice ? money(i.salePrice) : '<span class="muted">—</span>'}</td>
@@ -3370,7 +3421,7 @@
                         <td style="text-align:right">${money(Math.max(0, st) * num(i.costPrice))}</td>
                     </tr>`;
                 }).join("")
-                : '<tr><td colspan="6" class="empty">No items yet. Add your first item from the Items page or through a purchase.</td></tr>';
+                : '<tr><td colspan="7" class="empty">No items yet. Add your first item from the Items page or through a purchase.</td></tr>';
 
             /* Recent sales */
             const recentSales = [...db.sales].sort((a, b) => String(b.date).localeCompare(String(a.date))).slice(0, 6);
@@ -3405,10 +3456,13 @@
            ITEMS PAGE
            ============================================================ */
         function renderItemsPage() {
+            refreshCategoryFilter();
             const q = ($("itemsSearch").value || "").trim().toLowerCase();
+            const catFilter = ($("itemsCategoryFilter")?.value || "").trim();
 
             const list = [...db.items]
-                .filter(i => !q || [i.name, i.unit, i.color, i.material, i.weight, i.note, i.length, i.width, i.height]
+                .filter(i => !catFilter || normalizeCategory(i.category) === catFilter)
+                .filter(i => !q || [i.name, i.category, i.unit, i.color, i.material, i.weight, i.note, i.length, i.width, i.height]
                     .join(" ").toLowerCase().includes(q))
                 .sort((a, b) => a.name.localeCompare(b.name));
 
@@ -3431,6 +3485,7 @@
                             ${details ? `<div class="item-meta">${safe(details)}</div>` : ""}
                             ${i.note ? `<div class="item-meta">📝 ${safe(i.note)}</div>` : ""}
                         </td>
+                        <td><span class="chip blue">${safe(normalizeCategory(i.category))}</span></td>
                         <td><span class="chip grey">${safe(i.unit)}</span></td>
                         <td style="text-align:right">${money(i.costPrice)}</td>
                         <td style="text-align:right">${i.salePrice ? money(i.salePrice) : '<span class="muted">—</span>'}</td>
@@ -3447,7 +3502,7 @@
                         </div></td>
                     </tr>`;
                 }).join("")
-                : '<tr><td colspan="8" class="empty">No items found. Click “＋ Add Item” to create one.</td></tr>';
+                : '<tr><td colspan="9" class="empty">No items found. Click “＋ Add Item” to create one.</td></tr>';
 
             renderItemHistory();
         }
@@ -3473,7 +3528,9 @@
         /* ---------- Item modal ---------- */
         function openItemModal(id) {
             $("itemForm").reset();
+            refreshCategoryDatalist();
             $("itemUnit").innerHTML = unitOptions("pcs");
+            $("itemCategory").value = "General";
             $("itemAttrWrap").classList.add("hidden");
             $("itemAttrToggle").querySelector("span").textContent = "▸ Details — dimensions, colour, weight, material (optional)";
 
@@ -3483,6 +3540,7 @@
                 $("itemModalTitle").textContent = "Edit Item";
                 $("itemId").value = it.id;
                 $("itemName").value = it.name;
+                $("itemCategory").value = normalizeCategory(it.category);
                 $("itemUnit").innerHTML = unitOptions(it.unit);
                 $("itemCost").value = it.costPrice || "";
                 $("itemSale").value = it.salePrice || "";
@@ -3529,6 +3587,7 @@
 
             const payload = {
                 name: name,
+                category: normalizeCategory($("itemCategory").value),
                 unit: $("itemUnit").value || "pcs",
                 costPrice: Math.max(0, num($("itemCost").value)),
                 salePrice: Math.max(0, num($("itemSale").value)),
@@ -3544,7 +3603,7 @@
             if (id) {
                 const it = itemById(id);
                 if (!it) return;
-                const before = `${it.name} • cost ${money(it.costPrice)} • sale ${it.salePrice ? money(it.salePrice) : "—"}`;
+                const before = `${it.name} [${it.category}] • cost ${money(it.costPrice)} • sale ${it.salePrice ? money(it.salePrice) : "—"}`;
                 Object.assign(it, payload);
                 it.updatedAt = new Date().toISOString();
                 logEvent("item-edited", `Item “${it.name}” updated (was ${before}).`);
@@ -3552,7 +3611,7 @@
                 const it = Object.assign({ id: uid("itm"), createdAt: new Date().toISOString() }, payload);
                 it.updatedAt = it.createdAt;
                 db.items.push(it);
-                logEvent("item-added", `Item “${it.name}” added — ${it.unit} @ ${money(it.costPrice)}${it.salePrice ? " / sale " + money(it.salePrice) : ""}.`);
+                logEvent("item-added", `Item “${it.name}” [${it.category}] added — ${it.unit} @ ${money(it.costPrice)}${it.salePrice ? " / sale " + money(it.salePrice) : ""}.`);
             }
 
             if (await commit("Saving item...", "Item saved successfully.")) {
@@ -3610,6 +3669,7 @@
                     <div class="mini-block"><small>Total Sold</small><strong>${formatQty(outQty)}</strong></div>
                     <div class="mini-block"><small>Average Cost</small><strong>${money(avgCost)}</strong></div>
                 </div>
+                <div class="kpi-line"><span>Category</span><strong>${safe(normalizeCategory(it.category))}</strong></div>
                 <div class="kpi-line"><span>Purchase Price (current)</span><strong>${money(it.costPrice)}</strong></div>
                 <div class="kpi-line"><span>Sale Price</span><strong>${it.salePrice ? money(it.salePrice) : "Not set"}</strong></div>
                 <div class="kpi-line"><span>Stock Value (cost)</span><strong>${money(Math.max(0, stock) * num(it.costPrice))}</strong></div>
@@ -3682,6 +3742,7 @@
         function openSaleModal() {
             $("saleForm").reset();
             refreshItemDatalist();
+            refreshCategoryDatalist();
             refreshPartyDatalists();
             $("saleId").value = "";
             $("saleModalTitle").textContent = "New Sale";
@@ -3698,7 +3759,7 @@
         }
 
         function addSaleLine(itemId = "") {
-            const line = { itemId: itemId || "", qty: 1, price: 0, cost: 0, newName: "", newCost: 0 };
+            const line = { itemId: itemId || "", qty: 1, price: 0, cost: 0, newName: "", newCost: 0, newCategory: "" };
             if (itemId && itemId !== "__new__") {
                 const it = itemById(itemId);
                 if (it) { line.price = num(it.salePrice); line.cost = num(it.costPrice); }
@@ -3728,6 +3789,8 @@
                                     onchange="saleLineNewName(${i},this.value)">
                                 <input type="number" min="0" step="0.01" placeholder="Cost price (for profit)" value="${num(l.newCost) || ""}"
                                     style="width:100%;margin-top:6px" onchange="saleLineNewCost(${i},this.value)">
+                                <input list="categoryNames" placeholder="Category (optional)" value="${safe(l.newCategory || "")}"
+                                    style="width:100%;margin-top:6px" onchange="saleLineNewCategory(${i},this.value)">
                             ` : ""}
                         </td>
                         <td style="text-align:right" class="${stock < 0 ? "profit-neg" : ""}">${item ? formatQty(stock) : "—"}</td>
@@ -3754,6 +3817,7 @@
                 l.cost = 0;
                 l.newName = "";
                 l.newCost = 0;
+                l.newCategory = "";
             } else {
                 l.price = 0;
                 l.cost = 0;
@@ -3762,6 +3826,7 @@
             updateSaleSummary();
         }
         function saleLineNewName(i, v) { saleLines[i].newName = v.trim(); }
+        function saleLineNewCategory(i, v) { saleLines[i].newCategory = String(v || "").trim(); }
         function saleLineNewCost(i, v) {
             saleLines[i].newCost = Math.max(0, num(v));
             saleLines[i].cost = saleLines[i].newCost;
@@ -3811,6 +3876,7 @@
                         existing = {
                             id: uid("itm"),
                             name: name,
+                            category: normalizeCategory(l.newCategory),
                             unit: "pcs",
                             costPrice: num(l.newCost),
                             salePrice: num(l.price),
@@ -3820,7 +3886,7 @@
                         };
                         db.items.push(existing);
                         createdHere.add(existing.id);
-                        logEvent("item-added", `Item “${existing.name}” added from a sale — cost ${money(existing.costPrice)}, sale ${money(existing.salePrice)}.`);
+                        logEvent("item-added", `Item “${existing.name}” [${existing.category}] added from a sale — cost ${money(existing.costPrice)}, sale ${money(existing.salePrice)}.`);
                     } else {
                         createdHere.add(existing.id);
                     }
@@ -3964,6 +4030,7 @@
         function openPurchaseModal() {
             $("purchaseForm").reset();
             refreshItemDatalist();
+            refreshCategoryDatalist();
             refreshPartyDatalists();
             $("purchaseId").value = "";
             $("purchaseModalTitle").textContent = "New Purchase";
@@ -3979,7 +4046,7 @@
         }
 
         function addPurchaseLine(name = "") {
-            const line = { name: name || "", unit: "pcs", qty: 1, rate: 0, showAttrs: false, unitTouched: false, rateTouched: false, attrs: {} };
+            const line = { name: name || "", category: "", unit: "pcs", qty: 1, rate: 0, showAttrs: false, unitTouched: false, rateTouched: false, attrs: {} };
             if (name) {
                 const it = findItemByName(name);
                 if (it) { line.unit = it.unit || "pcs"; line.rate = num(it.costPrice); }
@@ -4020,6 +4087,9 @@
                                 <input list="itemNames" value="${safe(l.name)}" placeholder="Type or pick a previous item"
                                     oninput="purchaseLineName(${i},this.value,false)"
                                     onchange="purchaseLineName(${i},this.value,true)">
+                                ${(!match && (l.name || "").trim()) ? `
+                                    <input list="categoryNames" placeholder="Category (optional)" value="${safe(l.category || "")}"
+                                        style="margin-top:6px" onchange="purchaseLineCategory(${i},this.value)">` : ""}
                             </div>
                             <div class="form-group">
                                 <label>Units</label>
@@ -4065,6 +4135,7 @@
             if (rerender) renderPurchaseLines();
             updatePurchaseSummary();
         }
+        function purchaseLineCategory(i, v) { purchaseLines[i].category = String(v || "").trim(); }
         function purchaseLineUnit(i, v) { purchaseLines[i].unit = v; purchaseLines[i].unitTouched = true; }
         function purchaseLineQty(i, v) { purchaseLines[i].qty = Math.max(1, Math.floor(num(v))); renderPurchaseLines(); updatePurchaseSummary(); }
         function purchaseLineRate(i, v) { purchaseLines[i].rate = Math.max(0, num(v)); purchaseLines[i].rateTouched = true; renderPurchaseLines(); updatePurchaseSummary(); }
@@ -4107,6 +4178,7 @@
                     it = {
                         id: uid("itm"),
                         name: name,
+                        category: normalizeCategory(l.category),
                         unit: l.unit || "pcs",
                         costPrice: num(l.rate),
                         salePrice: 0,
@@ -4121,7 +4193,7 @@
                         updatedAt: new Date().toISOString()
                     };
                     db.items.push(it);
-                    logEvent("item-added", `Item “${it.name}” added from purchase ${$("purchaseBill").value} — ${it.unit} @ ${money(it.costPrice)}.`);
+                    logEvent("item-added", `Item “${it.name}” [${it.category}] added from purchase ${$("purchaseBill").value} — ${it.unit} @ ${money(it.costPrice)}.`);
                 } else {
                     if (l.unit && l.unit !== it.unit) it.unit = l.unit;
                     const a = l.attrs || {};
@@ -4520,7 +4592,6 @@
         function openPaymentModal(type, partyId) {
             paymentScope.type = type === "buyer" ? "buyer" : "supplier";
 
-            // Fill party select
             const select = $("paymentParty");
             const label = $("paymentPartyLabel");
             if (paymentScope.type === "supplier") {
@@ -4968,6 +5039,8 @@
         function refreshUI() {
             normalize();
             refreshItemDatalist();
+            refreshCategoryDatalist();
+            refreshCategoryFilter();
             refreshPartyDatalists();
             renderDashboard();
             renderItemsPage();
@@ -5022,6 +5095,7 @@
             $("purchasesSearch").oninput = renderPurchases;
             $("purchasesDateFilter").onchange = renderPurchases;
             $("itemsSearch").oninput = renderItemsPage;
+            $("itemsCategoryFilter").onchange = renderItemsPage;
             $("suppliersSearch").oninput = renderSuppliersPage;
             $("buyersSearch").oninput = renderBuyersPage;
 
@@ -5069,7 +5143,6 @@
             document.querySelectorAll(".modal").forEach(m => m.addEventListener("click", e => { if (e.target === m) m.classList.remove("open") }));
             document.addEventListener("keydown", e => {
                 if (e.key === "Escape") {
-                    // If the custom dialog is open, let it handle the ESC press first
                     const dlg = document.getElementById("pgbDialogOverlay");
                     if (dlg && dlg.classList.contains("pgb-visible")) {
                         pgbCloseDialog(false);
