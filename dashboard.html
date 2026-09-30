@@ -1417,6 +1417,230 @@
             justify-content: center;
         }
 
+        /* ============ CUSTOM ALERT / CONFIRM DIALOG ============ */
+        .pgb-dialog-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: rgba(15, 10, 5, 0);
+            backdrop-filter: blur(0);
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+            transition: background .3s ease, backdrop-filter .3s ease, opacity .28s ease, visibility .28s ease;
+        }
+
+        .pgb-dialog-overlay.pgb-visible {
+            background: rgba(15, 10, 5, .55);
+            backdrop-filter: blur(5px);
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .pgb-dialog {
+            width: 100%;
+            max-width: 440px;
+            background: #fff;
+            border-radius: 18px;
+            padding: 30px 26px 22px;
+            text-align: center;
+            box-shadow: 0 30px 80px rgba(16, 24, 40, .38), 0 0 0 1px rgba(122, 75, 24, .08);
+            position: relative;
+            overflow: hidden;
+            transform: scale(.82) translateY(28px);
+            opacity: 0;
+            transition: transform .4s cubic-bezier(.34, 1.56, .64, 1), opacity .28s ease;
+        }
+
+        .pgb-dialog-overlay.pgb-visible .pgb-dialog {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+        }
+
+        .pgb-dialog::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-2));
+        }
+
+        .pgb-dialog.pgb-type-success::before {
+            background: linear-gradient(90deg, var(--success), #12a05c);
+        }
+
+        .pgb-dialog.pgb-type-danger::before {
+            background: linear-gradient(90deg, var(--danger), #d92d20);
+        }
+
+        .pgb-dialog.pgb-type-warning::before {
+            background: linear-gradient(90deg, var(--warning), #dc6803);
+        }
+
+        .pgb-dialog-icon {
+            width: 66px;
+            height: 66px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 4px auto 16px;
+            font-size: 30px;
+            font-weight: 900;
+            line-height: 1;
+            color: var(--primary);
+            background: var(--primary-soft);
+            box-shadow: 0 8px 24px rgba(122, 75, 24, .18);
+            animation: pgbIconPop .5s cubic-bezier(.34, 1.56, .64, 1) .08s both;
+        }
+
+        .pgb-dialog.pgb-type-success .pgb-dialog-icon {
+            color: var(--success);
+            background: var(--success-soft);
+            box-shadow: 0 8px 24px rgba(8, 116, 67, .2);
+        }
+
+        .pgb-dialog.pgb-type-danger .pgb-dialog-icon {
+            color: var(--danger);
+            background: var(--danger-soft);
+            box-shadow: 0 8px 24px rgba(180, 35, 24, .22);
+        }
+
+        .pgb-dialog.pgb-type-warning .pgb-dialog-icon {
+            color: var(--warning);
+            background: var(--warning-soft);
+            box-shadow: 0 8px 24px rgba(181, 71, 8, .22);
+        }
+
+        @keyframes pgbIconPop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .pgb-dialog-title {
+            font-size: 19px;
+            font-weight: 850;
+            color: var(--text);
+            margin-bottom: 8px;
+            letter-spacing: .2px;
+        }
+
+        .pgb-dialog-message {
+            font-size: 13.5px;
+            color: var(--muted);
+            line-height: 1.65;
+            white-space: pre-wrap;
+            word-break: break-word;
+            margin-bottom: 22px;
+        }
+
+        .pgb-dialog-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .pgb-dialog-btn {
+            border: 0;
+            border-radius: 11px;
+            padding: 12px 26px;
+            font-size: 13px;
+            font-weight: 800;
+            min-width: 110px;
+            min-height: 46px;
+            transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .pgb-dialog-btn:active {
+            transform: scale(.97);
+        }
+
+        .pgb-dialog-btn.pgb-ok {
+            background: linear-gradient(135deg, var(--primary), #5d2d0c);
+            color: #fff;
+            box-shadow: 0 8px 22px rgba(122, 75, 24, .28);
+        }
+
+        .pgb-dialog-btn.pgb-ok:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 26px rgba(122, 75, 24, .34);
+        }
+
+        .pgb-dialog.pgb-type-danger .pgb-dialog-btn.pgb-ok {
+            background: linear-gradient(135deg, var(--danger), #912018);
+            box-shadow: 0 8px 22px rgba(180, 35, 24, .3);
+        }
+
+        .pgb-dialog.pgb-type-danger .pgb-dialog-btn.pgb-ok:hover {
+            box-shadow: 0 12px 26px rgba(180, 35, 24, .38);
+        }
+
+        .pgb-dialog.pgb-type-success .pgb-dialog-btn.pgb-ok {
+            background: linear-gradient(135deg, var(--success), #065c35);
+            box-shadow: 0 8px 22px rgba(8, 116, 67, .28);
+        }
+
+        .pgb-dialog.pgb-type-warning .pgb-dialog-btn.pgb-ok {
+            background: linear-gradient(135deg, var(--warning), #93370d);
+            box-shadow: 0 8px 22px rgba(181, 71, 8, .28);
+        }
+
+        .pgb-dialog-btn.pgb-cancel {
+            background: #eef0f3;
+            color: #344054;
+            border: 1px solid var(--border);
+        }
+
+        .pgb-dialog-btn.pgb-cancel:hover {
+            background: #e1e5ea;
+        }
+
+        .pgb-dialog-btn.pgb-ok::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 60%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .35), transparent);
+            animation: pgbShine 3.2s ease infinite;
+        }
+
+        @keyframes pgbShine {
+            0% {
+                left: -100%;
+            }
+
+            60% {
+                left: 130%;
+            }
+
+            100% {
+                left: 130%;
+            }
+        }
+
+        .pgb-dialog.pgb-alert-only .pgb-dialog-btn.pgb-cancel {
+            display: none;
+        }
+
         @media(max-width:1150px) {
             .dashboard-panel {
                 grid-template-columns: 1fr;
@@ -1518,6 +1742,36 @@
 
             .modal-box {
                 max-height: 96vh;
+            }
+        }
+
+        @media(max-width:480px) {
+            .pgb-dialog {
+                padding: 24px 20px 18px;
+                border-radius: 16px;
+            }
+
+            .pgb-dialog-icon {
+                width: 56px;
+                height: 56px;
+                font-size: 26px;
+                margin-bottom: 13px;
+            }
+
+            .pgb-dialog-title {
+                font-size: 17px;
+            }
+
+            .pgb-dialog-message {
+                font-size: 12.5px;
+            }
+
+            .pgb-dialog-actions {
+                flex-direction: column-reverse;
+            }
+
+            .pgb-dialog-btn {
+                width: 100%;
             }
         }
     </style>
@@ -2463,6 +2717,20 @@
     </div>
     <div class="toast" id="toast"></div>
 
+    <!-- ================= CUSTOM ALERT / CONFIRM DIALOG ================= -->
+    <div class="pgb-dialog-overlay" id="pgbDialogOverlay" onclick="if(event.target===this)pgbCloseDialog(false)">
+        <div class="pgb-dialog" id="pgbDialogBox" role="dialog" aria-modal="true" aria-labelledby="pgbDialogTitle">
+            <div class="pgb-dialog-icon" id="pgbDialogIcon">!</div>
+            <h3 class="pgb-dialog-title" id="pgbDialogTitle">Notice</h3>
+            <p class="pgb-dialog-message" id="pgbDialogMessage"></p>
+            <div class="pgb-dialog-actions">
+                <button type="button" class="pgb-dialog-btn pgb-cancel" id="pgbDialogCancel"
+                    onclick="pgbCloseDialog(false)">Cancel</button>
+                <button type="button" class="pgb-dialog-btn pgb-ok" id="pgbDialogOk" onclick="pgbCloseDialog(true)">OK</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         "use strict";
 
@@ -2542,6 +2810,102 @@
         function hideLoading() {
             loadingDepth = Math.max(0, loadingDepth - 1);
             if (!loadingDepth) $("loading").classList.remove("open");
+        }
+
+        /* ============================================================
+           CUSTOM ANIMATED ALERT / CONFIRM DIALOG
+           Replaces native browser alert()/confirm() with styled modals.
+           - customAlert(message, options?) -> Promise<void>
+           - customConfirm(message, options?) -> Promise<boolean>
+           Automatically picks a type based on keywords in the message.
+           ============================================================ */
+        let pgbDialogResolve = null;
+        let pgbDialogIsConfirm = false;
+        let pgbDialogLastFocus = null;
+
+        function pgbShowDialog(message, options = {}) {
+            return new Promise(resolve => {
+                pgbDialogResolve = resolve;
+                pgbDialogIsConfirm = options.confirm === true;
+
+                const overlay = $("pgbDialogOverlay");
+                const box = $("pgbDialogBox");
+                const icon = $("pgbDialogIcon");
+                const title = $("pgbDialogTitle");
+                const msg = $("pgbDialogMessage");
+                const okBtn = $("pgbDialogOk");
+                const cancelBtn = $("pgbDialogCancel");
+
+                const type = options.type || "info";
+                box.className = "pgb-dialog pgb-type-" + type + (pgbDialogIsConfirm ? "" : " pgb-alert-only");
+
+                const iconMap = { info: "i", success: "✓", danger: "!", warning: "⚠" };
+                icon.textContent = options.icon || iconMap[type] || "!";
+
+                title.textContent = options.title || (pgbDialogIsConfirm ? "Please Confirm" : "Notice");
+                msg.textContent = String(message ?? "");
+
+                okBtn.textContent = options.okText || (pgbDialogIsConfirm ? "Confirm" : "OK");
+                okBtn.className = "pgb-dialog-btn pgb-ok";
+                cancelBtn.textContent = options.cancelText || "Cancel";
+
+                pgbDialogLastFocus = document.activeElement;
+
+                overlay.classList.add("pgb-visible");
+
+                setTimeout(() => {
+                    const target = pgbDialogIsConfirm ? okBtn : okBtn;
+                    try { target.focus(); } catch (_) { }
+                }, 140);
+            });
+        }
+
+        function pgbCloseDialog(result) {
+            const overlay = $("pgbDialogOverlay");
+            if (!overlay.classList.contains("pgb-visible")) return;
+
+            overlay.classList.remove("pgb-visible");
+
+            const resolve = pgbDialogResolve;
+            pgbDialogResolve = null;
+
+            if (pgbDialogLastFocus && typeof pgbDialogLastFocus.focus === "function") {
+                try { pgbDialogLastFocus.focus(); } catch (_) { }
+            }
+            pgbDialogLastFocus = null;
+
+            if (typeof resolve === "function") resolve(!!result);
+        }
+
+        function customAlert(message, options = {}) {
+            const lower = String(message ?? "").toLowerCase();
+            let type = options.type;
+            if (!type) {
+                if (/(fail|error|invalid|cannot|unable|incorrect|rejected|denied|oversold)/.test(lower)) type = "danger";
+                else if (/(success|saved|created|added|recorded|updated|restored|changed)/.test(lower)) type = "success";
+                else if (/(please|enter|required|choose|must|select|pick)/.test(lower)) type = "warning";
+                else type = "info";
+            }
+            return pgbShowDialog(message, Object.assign({}, options, { type: type, confirm: false }));
+        }
+
+        function customConfirm(message, options = {}) {
+            const lower = String(message ?? "").toLowerCase();
+            let type = options.type;
+            if (!type) {
+                if (/(delete|remove|discard|lost|permanent|irreversible)/.test(lower)) type = "danger";
+                else if (/(save|submit|continue|confirm|proceed)/.test(lower)) type = "info";
+                else type = "warning";
+            }
+            const defaults = {
+                title: type === "danger" ? "Confirm Delete" : "Please Confirm",
+                okText: type === "danger" ? "Yes, Delete" : "Confirm",
+                cancelText: "Cancel"
+            };
+            return pgbShowDialog(message, Object.assign(defaults, options, {
+                type: type,
+                confirm: true
+            }));
         }
 
         function applyBranch() {
@@ -2747,7 +3111,10 @@
                 db = structuredClone(EMPTY_DB);
                 normalize();
                 refreshUI();
-                alert("PGB could not connect to the online database.\n\n" + e.message);
+                customAlert("PGB could not connect to the online database.\n\n" + e.message, {
+                    title: "Connection Error",
+                    type: "danger"
+                });
             } finally { hideLoading() }
         }
         async function commit(message, success) {
@@ -2759,7 +3126,10 @@
                 return true;
             } catch (e) {
                 console.error(e);
-                alert("Online save failed.\n\n" + e.message);
+                customAlert("Online save failed.\n\n" + e.message, {
+                    title: "Save Failed",
+                    type: "danger"
+                });
                 return false;
             } finally { hideLoading() }
         }
@@ -3145,11 +3515,17 @@
         async function saveItem(e) {
             e.preventDefault();
             const name = $("itemName").value.trim();
-            if (!name) { alert("Please enter an item name."); return; }
+            if (!name) {
+                customAlert("Please enter an item name.", { title: "Item Name Required", type: "warning" });
+                return;
+            }
 
             const id = $("itemId").value;
             const duplicate = db.items.find(i => i.name.trim().toLowerCase() === name.toLowerCase() && String(i.id) !== String(id));
-            if (duplicate) { alert("Another item already uses this name."); return; }
+            if (duplicate) {
+                customAlert("Another item already uses this name.", { title: "Duplicate Item", type: "warning" });
+                return;
+            }
 
             const payload = {
                 name: name,
@@ -3192,7 +3568,13 @@
             const msg = used
                 ? `“${it.name}” has purchase/sale records. Delete anyway? Old reports will show "Deleted Item".`
                 : `Delete “${it.name}” from the catalogue?`;
-            if (!confirm(msg)) return;
+            const ok = await customConfirm(msg, {
+                title: "Delete Item",
+                type: "danger",
+                okText: "Yes, Delete",
+                cancelText: "Cancel"
+            });
+            if (!ok) return;
 
             db.items = db.items.filter(x => String(x.id) !== String(id));
             logEvent("item-deleted", `Item “${it.name}” removed from the catalogue.`);
@@ -3410,14 +3792,20 @@
             e.preventDefault();
             const valid = saleLines.filter(l => (l.itemId && l.qty > 0));
 
-            if (!valid.length) { alert("Add at least one item."); return; }
+            if (!valid.length) {
+                customAlert("Add at least one item.", { title: "No Items", type: "warning" });
+                return;
+            }
 
             /* Resolve new items first */
             const createdHere = new Set();
             for (const l of valid) {
                 if (l.itemId === "__new__") {
                     const name = (l.newName || "").trim();
-                    if (!name) { alert("Enter a name for the new item."); return; }
+                    if (!name) {
+                        customAlert("Enter a name for the new item.", { title: "Item Name Required", type: "warning" });
+                        return;
+                    }
                     let existing = findItemByName(name);
                     if (!existing) {
                         existing = {
@@ -3445,7 +3833,15 @@
                 if (createdHere.has(String(l.itemId))) continue;
                 const st = stockOf(l.itemId);
                 if (l.qty > st) {
-                    const ok = confirm(`${itemName(l.itemId)} has only ${formatQty(st)} in stock. Sell ${l.qty} anyway?`);
+                    const ok = await customConfirm(
+                        `${itemName(l.itemId)} has only ${formatQty(st)} in stock. Sell ${l.qty} anyway?`,
+                        {
+                            title: "Stock Warning",
+                            type: "warning",
+                            okText: "Sell Anyway",
+                            cancelText: "Cancel"
+                        }
+                    );
                     if (!ok) return;
                 }
             }
@@ -3454,7 +3850,10 @@
             const discount = Math.max(0, num($("saleDiscount").value));
             const total = Math.max(0, subtotal - discount);
             const paid = Math.max(0, num($("salePaid").value));
-            if (paid > total) { alert("Paid amount cannot exceed the sale total."); return }
+            if (paid > total) {
+                customAlert("Paid amount cannot exceed the sale total.", { title: "Invalid Amount", type: "warning" });
+                return;
+            }
 
             /* Resolve buyer */
             const buyerName = $("saleCustomer").value.trim() || "Walk-in Customer";
@@ -3549,7 +3948,11 @@
         async function deleteSale(id) {
             const s = db.sales.find(x => String(x.id) === String(id));
             if (!s) return;
-            if (!confirm(`Delete sale ${s.invoice}? Stock will be returned automatically.`)) return;
+            const ok = await customConfirm(
+                `Delete sale ${s.invoice}? Stock will be returned automatically.`,
+                { title: "Delete Sale", type: "danger", okText: "Yes, Delete", cancelText: "Cancel" }
+            );
+            if (!ok) return;
             db.sales = db.sales.filter(x => String(x.id) !== String(id));
             logEvent("sale", `Sale ${s.invoice} deleted.`);
             await commit("Deleting sale online...", "Sale deleted.");
@@ -3684,11 +4087,17 @@
         async function savePurchase(e) {
             e.preventDefault();
             const valid = purchaseLines.filter(l => (l.name || "").trim() && l.qty > 0);
-            if (!valid.length) { alert("Add at least one item."); return }
+            if (!valid.length) {
+                customAlert("Add at least one item.", { title: "No Items", type: "warning" });
+                return;
+            }
 
             const total = valid.reduce((a, l) => a + num(l.qty) * num(l.rate), 0);
             const paid = Math.max(0, num($("purchasePaid").value));
-            if (paid > total) { alert("Paid amount cannot exceed purchase total."); return }
+            if (paid > total) {
+                customAlert("Paid amount cannot exceed purchase total.", { title: "Invalid Amount", type: "warning" });
+                return;
+            }
 
             /* Resolve items */
             for (const l of valid) {
@@ -3812,10 +4221,17 @@
         async function deletePurchase(id) {
             const p = db.purchases.find(x => String(x.id) === String(id));
             if (!p) return;
-            if (!confirm(`Delete purchase ${p.bill}? Inventory will be reduced automatically.`)) return;
+            const ok = await customConfirm(
+                `Delete purchase ${p.bill}? Inventory will be reduced automatically.`,
+                { title: "Delete Purchase", type: "danger", okText: "Yes, Delete", cancelText: "Cancel" }
+            );
+            if (!ok) return;
             for (const l of p.items) {
                 if (stockOf(l.itemId) < l.qty) {
-                    alert(`Cannot delete because ${itemName(l.itemId)} has already been sold from this stock.`);
+                    customAlert(
+                        `Cannot delete because ${itemName(l.itemId)} has already been sold from this stock.`,
+                        { title: "Cannot Delete", type: "danger" }
+                    );
                     return;
                 }
             }
@@ -3902,11 +4318,17 @@
         async function saveSupplier(e) {
             e.preventDefault();
             const name = $("supplierName").value.trim();
-            if (!name) { alert("Please enter a supplier name."); return; }
+            if (!name) {
+                customAlert("Please enter a supplier name.", { title: "Supplier Name Required", type: "warning" });
+                return;
+            }
 
             const id = $("supplierId").value;
             const duplicate = db.suppliers.find(s => s.name.toLowerCase() === name.toLowerCase() && String(s.id) !== String(id));
-            if (duplicate) { alert("Another supplier already uses this name."); return; }
+            if (duplicate) {
+                customAlert("Another supplier already uses this name.", { title: "Duplicate Supplier", type: "warning" });
+                return;
+            }
 
             const payload = {
                 name,
@@ -3941,7 +4363,13 @@
             const msg = stats.count
                 ? `“${s.name}” has ${stats.count} purchase record(s). Delete from directory? Old purchases will keep the supplier name.`
                 : `Delete “${s.name}” from the supplier directory?`;
-            if (!confirm(msg)) return;
+            const ok = await customConfirm(msg, {
+                title: "Delete Supplier",
+                type: "danger",
+                okText: "Yes, Delete",
+                cancelText: "Cancel"
+            });
+            if (!ok) return;
             db.suppliers = db.suppliers.filter(x => String(x.id) !== String(id));
             db.payments = db.payments.filter(p => !(p.type === "supplier" && String(p.partyId) === String(id)));
             logEvent("supplier-deleted", `Supplier “${s.name}” removed from directory.`);
@@ -4026,11 +4454,17 @@
         async function saveBuyer(e) {
             e.preventDefault();
             const name = $("buyerName").value.trim();
-            if (!name) { alert("Please enter a buyer name."); return; }
+            if (!name) {
+                customAlert("Please enter a buyer name.", { title: "Buyer Name Required", type: "warning" });
+                return;
+            }
 
             const id = $("buyerId").value;
             const duplicate = db.buyers.find(b => b.name.toLowerCase() === name.toLowerCase() && String(b.id) !== String(id));
-            if (duplicate) { alert("Another buyer already uses this name."); return; }
+            if (duplicate) {
+                customAlert("Another buyer already uses this name.", { title: "Duplicate Buyer", type: "warning" });
+                return;
+            }
 
             const payload = {
                 name,
@@ -4065,7 +4499,13 @@
             const msg = stats.count
                 ? `“${b.name}” has ${stats.count} sale record(s). Delete from directory? Old sales will keep the buyer name.`
                 : `Delete “${b.name}” from the buyer directory?`;
-            if (!confirm(msg)) return;
+            const ok = await customConfirm(msg, {
+                title: "Delete Buyer",
+                type: "danger",
+                okText: "Yes, Delete",
+                cancelText: "Cancel"
+            });
+            if (!ok) return;
             db.buyers = db.buyers.filter(x => String(x.id) !== String(id));
             db.payments = db.payments.filter(p => !(p.type === "buyer" && String(p.partyId) === String(id)));
             logEvent("buyer-deleted", `Buyer “${b.name}” removed from directory.`);
@@ -4138,9 +4578,15 @@
             e.preventDefault();
             const type = $("paymentType").value || "supplier";
             const partyId = $("paymentParty").value;
-            if (!partyId) { alert("Please choose a party."); return; }
+            if (!partyId) {
+                customAlert("Please choose a party.", { title: "Party Required", type: "warning" });
+                return;
+            }
             const amount = Math.max(0, num($("paymentAmount").value));
-            if (amount <= 0) { alert("Enter a valid amount."); return; }
+            if (amount <= 0) {
+                customAlert("Enter a valid amount.", { title: "Invalid Amount", type: "warning" });
+                return;
+            }
 
             const pay = {
                 id: uid("pay"),
@@ -4500,13 +4946,19 @@
                     refreshUI();
                     toast("Branch backup restored successfully.");
                 } catch (e) {
-                    alert("Restore failed.\n\n" + e.message);
+                    customAlert("Restore failed.\n\n" + e.message, {
+                        title: "Restore Failed",
+                        type: "danger"
+                    });
                 } finally {
                     hideLoading();
                     $("restoreFile").value = "";
                 }
             };
-            r.onerror = () => { hideLoading(); alert("Could not read backup file.") };
+            r.onerror = () => {
+                hideLoading();
+                customAlert("Could not read backup file.", { title: "Restore Failed", type: "danger" });
+            };
             r.readAsText(file);
         }
 
@@ -4591,15 +5043,23 @@
             $("saveSettingsBtn").onclick = async () => {
                 showLoading("Saving branch data...");
                 try { await saveBranchFile(); toast("Branch data saved.") }
-                catch (e) { alert(e.message) }
+                catch (e) {
+                    customAlert(e.message, { title: "Save Failed", type: "danger" });
+                }
                 finally { hideLoading() }
             };
             $("backupBtn").onclick = async () => { showLoading("Preparing backup..."); try { await backup() } finally { hideLoading() } };
             $("restoreBtn").onclick = () => $("restoreFile").click();
             $("restoreFile").onchange = e => e.target.files[0] && restore(e.target.files[0]);
 
-            $("logoutBtn").onclick = () => {
-                if (confirm("Return to the login page?")) {
+            $("logoutBtn").onclick = async () => {
+                const ok = await customConfirm("Return to the login page?", {
+                    title: "Logout",
+                    type: "warning",
+                    okText: "Logout",
+                    cancelText: "Stay"
+                });
+                if (ok) {
                     sessionStorage.removeItem("branch");
                     window.location.href = "index.html";
                 }
@@ -4608,7 +5068,15 @@
             document.querySelectorAll("[data-close]").forEach(b => b.onclick = () => $(b.dataset.close).classList.remove("open"));
             document.querySelectorAll(".modal").forEach(m => m.addEventListener("click", e => { if (e.target === m) m.classList.remove("open") }));
             document.addEventListener("keydown", e => {
-                if (e.key === "Escape") document.querySelectorAll(".modal.open").forEach(m => m.classList.remove("open"));
+                if (e.key === "Escape") {
+                    // If the custom dialog is open, let it handle the ESC press first
+                    const dlg = document.getElementById("pgbDialogOverlay");
+                    if (dlg && dlg.classList.contains("pgb-visible")) {
+                        pgbCloseDialog(false);
+                        return;
+                    }
+                    document.querySelectorAll(".modal.open").forEach(m => m.classList.remove("open"));
+                }
             });
 
             const tick = () => {
